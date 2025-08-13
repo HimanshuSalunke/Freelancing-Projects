@@ -1,95 +1,13 @@
-# Dependencies
+# ===========================================
+# DEPENDENCIES
+# ===========================================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# Next.js
-.next/
-out/
-build/
-dist/
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-
-# Storybook build outputs
-.out
-.storybook-out
-
-# Temporary folders
-tmp/
-temp/
-
-# Python (for backend)
+# Python dependencies
 __pycache__/
 *.py[cod]
 *$py.class
@@ -101,15 +19,316 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
 
-# FastAPI
-.pytest_cache/
-.coverage
-htmlcov/
+# ===========================================
+# BUILD OUTPUTS
+# ===========================================
+# Next.js
+.next/
+out/
+build/
+dist/
+.vercel/
 
-# PDF files (generated)
+# Nuxt.js
+.nuxt
+.nuxt-dist
+
+# Vite
+.vite/
+
+# ===========================================
+# ENVIRONMENT & SECURITY
+# ===========================================
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# API Keys and Secrets
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+config.json
+credentials.json
+service-account*.json
+
+# ===========================================
+# AI MODELS & LARGE FILES
+# ===========================================
+# AI Model directories (VERY LARGE - 100MB+ each)
+models/
+%CD%/
+*.bin
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.hdf5
+*.pb
+*.tflite
+*.mlmodel
+*.mar
+*.model
+
+# Hugging Face models
+transformers_cache/
+.cache/
+.huggingface/
+
+# Sentence Transformers
+sentence-transformers/
+all-MiniLM-L6-v2/
+*.incomplete
+
+# TensorFlow/Keras
+.keras/
+tensorboard_logs/
+
+# PyTorch
+torch_cache/
+.torch/
+
+# ===========================================
+# DATA FILES
+# ===========================================
+# Large data files
+*.csv
+*.json
+*.xml
+*.xlsx
+*.xls
+*.db
+*.sqlite
+*.sqlite3
+*.mdb
+*.accdb
+
+# Log files
+*.log
+logs/
+hr_notifications.log
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.tmp
+*.temp
+
+# ===========================================
+# DOCUMENTS & MEDIA
+# ===========================================
+# PDF files (can be large)
 *.pdf
+
+# Office documents
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+
+# Images and media
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.svg
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mp3
+*.wav
+*.flac
+*.aac
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.bz2
+
+# ===========================================
+# DEVELOPMENT TOOLS
+# ===========================================
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===========================================
+# TESTING & COVERAGE
+# ===========================================
+# Coverage
+coverage/
+.nyc_output
+htmlcov/
+.coverage
+.pytest_cache/
 
 # Test files
 test_*.py
 *_test.py
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+tests/
+
+# ===========================================
+# CACHE & TEMPORARY FILES
+# ===========================================
+# Cache directories
+.cache/
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.eslintcache
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ===========================================
+# PACKAGE MANAGERS
+# ===========================================
+# npm
+.npm
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ===========================================
+# SPECIFIC PROJECT FILES
+# ===========================================
+# Large data files in your project
+backend/app/data/document_requests.json
+backend/app/data/employees.json
+backend/app/data/qa_dataset.json
+backend/app/data/hr_notifications.log
+
+# Organization data (contains sensitive employee info)
+org_data/employees.csv
+org_data/*.pdf
+
+# Generated test files
+test_fixes.py
+
+# ===========================================
+# MONITORING & ANALYTICS
+# ===========================================
+# Application monitoring
+*.pid
+*.port
+
+# Analytics
+analytics/
+stats/
+
+# ===========================================
+# DEPLOYMENT
+# ===========================================
+# Deployment files
+.vercel/
+.netlify/
+.firebase/
+.serverless/
+
+# ===========================================
+# MISC
+# ===========================================
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath
+*.sage.py
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ===========================================
+# KEEP THESE FILES (IMPORTANT)
+# ===========================================
+# Don't ignore these important files
+!package.json
+!requirements.txt
+!README.md
+!.gitignore
+!tsconfig.json
+!next.config.js
+!tailwind.config.js
+!postcss.config.js
+!eslint.config.js
