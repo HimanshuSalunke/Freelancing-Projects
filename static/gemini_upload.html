@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini PDF Analyzer - Advanced Document Processing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .upload-section {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ecff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 10px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-section {
+            padding: 20px 40px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .result-section {
+            padding: 40px;
+            display: none;
+        }
+
+        .result-header {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .result-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .meta-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .meta-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            color: #333;
+        }
+
+        .summary-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .summary-section {
+            margin-bottom: 30px;
+        }
+
+        .summary-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .key-points {
+            list-style: none;
+        }
+
+        .key-points li {
+            background: #f8f9ff;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .table-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .table-preview {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        .table-preview table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table-preview th,
+        .table-preview td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table-preview th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #d63031;
+        }
+
+        .success-message {
+            background: #e6ffe6;
+            color: #00b894;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #00b894;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .markdown-content {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+        }
+
+        .markdown-content p {
+            margin: 10px 0;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .markdown-content th,
+        .markdown-content td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .markdown-content th {
+            background: #f8f9ff;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .upload-section,
+            .result-section {
+                padding: 20px;
+            }
+
+            .result-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Gemini PDF Analyzer</h1>
+            <p>Advanced AI-powered document processing with Google Gemini 1.5 Flash</p>
+        </div>
+
+        <div class="upload-section" id="uploadSection">
+            <h2>Upload Your PDF Document</h2>
+            <p>Supports large documents (30+ pages) with intelligent table detection and analysis</p>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Drag & Drop your PDF here</div>
+                <div class="upload-subtext">or click to browse files</div>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf">
+            </div>
+
+            <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">
+                Choose PDF File
+            </button>
+            
+            <button class="upload-btn" id="asyncUploadBtn" style="display: none;">
+                <span class="loading-spinner" id="asyncSpinner" style="display: none;"></span>
+                Process with Gemini AI
+            </button>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <h3>Processing Your Document</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Initializing...</div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-header">
+                <h2>📊 Analysis Results</h2>
+                <div class="result-meta" id="resultMeta">
+                    <!-- Meta information will be populated here -->
+                </div>
+            </div>
+
+            <div class="summary-content">
+                <div class="summary-section">
+                    <h3>📋 Executive Summary</h3>
+                    <div id="executiveSummary" class="markdown-content"></div>
+                </div>
+
+                <div class="summary-section">
+                    <h3>🎯 Key Points</h3>
+                    <ul id="keyPoints" class="key-points"></ul>
+                </div>
+
+                <div class="summary-section" id="tablesSection" style="display: none;">
+                    <h3>📊 Tables Found</h3>
+                    <div id="tablesContent"></div>
+                </div>
+
+                <div class="summary-section" id="sectionsSection" style="display: none;">
+                    <h3>📑 Section Summaries</h3>
+                    <div id="sectionsContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentJobId = null;
+        let statusCheckInterval = null;
+
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const asyncUploadBtn = document.getElementById('asyncUploadBtn');
+        const asyncSpinner = document.getElementById('asyncSpinner');
+        const progressSection = document.getElementById('progressSection');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const resultSection = document.getElementById('resultSection');
+        const resultMeta = document.getElementById('resultMeta');
+        const executiveSummary = document.getElementById('executiveSummary');
+        const keyPoints = document.getElementById('keyPoints');
+        const tablesSection = document.getElementById('tablesSection');
+        const tablesContent = document.getElementById('tablesContent');
+        const sectionsSection = document.getElementById('sectionsSection');
+        const sectionsContent = document.getElementById('sectionsContent');
+
+        // Event Listeners
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', handleDragOver);
+        uploadArea.addEventListener('dragleave', handleDragLeave);
+        uploadArea.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+        asyncUploadBtn.addEventListener('click', handleAsyncUpload);
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            if (file.type !== 'application/pdf') {
+                showError('Please select a PDF file.');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showError('File size too large. Maximum 50MB allowed.');
+                return;
+            }
+
+            // Show async upload button
+            asyncUploadBtn.style.display = 'inline-block';
+            asyncUploadBtn.textContent = `Process "${file.name}" with Gemini AI`;
+            
+            // Store file for async upload
+            window.selectedFile = file;
+        }
+
+        async function handleAsyncUpload() {
+            if (!window.selectedFile) {
+                showError('Please select a file first.');
+                return;
+            }
+
+            try {
+                // Show loading state
+                asyncSpinner.style.display = 'inline-block';
+                asyncUploadBtn.disabled = true;
+                asyncUploadBtn.textContent = 'Starting Processing...';
+
+                // Upload file
+                const formData = new FormData();
+                formData.append('file', window.selectedFile);
+
+                const response = await fetch('/gemini/upload-gemini-async', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Upload failed: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                currentJobId = result.job_id;
+
+                // Show progress section
+                progressSection.style.display = 'block';
+                uploadSection.style.display = 'none';
+
+                // Start status checking
+                startStatusChecking();
+
+            } catch (error) {
+                showError(`Upload failed: ${error.message}`);
+                resetUploadState();
+            }
+        }
+
+        function startStatusChecking() {
+            statusCheckInterval = setInterval(checkJobStatus, 2000);
+        }
+
+        async function checkJobStatus() {
+            if (!currentJobId) return;
+
+            try {
+                const response = await fetch(`/gemini/status/${currentJobId}`);
+                if (!response.ok) {
+                    throw new Error('Status check failed');
+                }
+
+                const status = await response.json();
+                
+                // Update progress
+                progressFill.style.width = `${status.progress}%`;
+                progressText.textContent = status.message;
+
+                if (status.status === 'completed') {
+                    clearInterval(statusCheckInterval);
+                    showResults(status.result);
+                } else if (status.status === 'failed') {
+                    clearInterval(statusCheckInterval);
+                    showError(`Processing failed: ${status.error}`);
+                    resetUploadState();
+                }
+
+            } catch (error) {
+                console.error('Status check error:', error);
+            }
+        }
+
+        function showResults(result) {
+            progressSection.style.display = 'none';
+            resultSection.style.display = 'block';
+
+            // Populate meta information
+            resultMeta.innerHTML = `
+                <div class="meta-item">
+                    <div class="meta-label">Document Type</div>
+                    <div class="meta-value">${result.document_type}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Pages</div>
+                    <div class="meta-value">${result.total_pages}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Processing Time</div>
+                    <div class="meta-value">${result.processing_time.toFixed(2)}s</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Model Used</div>
+                    <div class="meta-value">${result.model_used}</div>
+                </div>
+            `;
+
+            // Populate executive summary
+            executiveSummary.innerHTML = result.executive_summary;
+
+            // Populate key points
+            keyPoints.innerHTML = result.key_points.map(point => 
+                `<li>${point}</li>`
+            ).join('');
+
+            // Populate tables if any
+            if (result.tables && result.tables.length > 0) {
+                tablesSection.style.display = 'block';
+                tablesContent.innerHTML = result.tables.map(table => `
+                    <div class="table-section">
+                        <h4>Table ${table.id}: ${table.title}</h4>
+                        <p><strong>Dimensions:</strong> ${table.dimensions}</p>
+                        <div class="table-preview">
+                            ${table.markdown}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Populate section summaries if any
+            if (result.section_summaries && result.section_summaries.length > 0) {
+                sectionsSection.style.display = 'block';
+                sectionsContent.innerHTML = result.section_summaries.map(section => `
+                    <div class="summary-section">
+                        <h4>${section.section}</h4>
+                        <p>${section.summary}</p>
+                        ${section.key_points ? `
+                            <ul class="key-points">
+                                ${section.key_points.map(point => `<li>${point}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // Clean up job
+            if (currentJobId) {
+                fetch(`/gemini/cleanup/${currentJobId}`, { method: 'DELETE' });
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(errorDiv, container.firstChild);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function resetUploadState() {
+            asyncSpinner.style.display = 'none';
+            asyncUploadBtn.disabled = false;
+            asyncUploadBtn.textContent = 'Process with Gemini AI';
+            asyncUploadBtn.style.display = 'none';
+            fileInput.value = '';
+            window.selectedFile = null;
+        }
+
+        // Health check on page load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/gemini/health');
+                if (!response.ok) {
+                    showError('Gemini service is not available. Please check the backend.');
+                }
+            } catch (error) {
+                showError('Cannot connect to Gemini service. Please ensure the backend is running.');
+            }
+        });
+    </script>
+</body>
+</html>
