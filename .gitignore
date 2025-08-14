@@ -1,4 +1,31 @@
 # ===========================================
+# CRITICAL EXCLUSIONS (DO NOT REMOVE)
+# ===========================================
+# Environment variables (contains sensitive API keys)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# AI Models (VERY LARGE - 100MB+ each)
+models/
+*.bin
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.hdf5
+*.pb
+*.tflite
+*.mlmodel
+*.mar
+*.model
+
+# ===========================================
 # DEPENDENCIES
 # ===========================================
 node_modules/
@@ -42,13 +69,7 @@ dist/
 # ===========================================
 # ENVIRONMENT & SECURITY
 # ===========================================
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.*.local
+# Environment variables (moved to CRITICAL EXCLUSIONS above)
 
 # API Keys and Secrets
 *.key
@@ -63,22 +84,8 @@ service-account*.json
 # ===========================================
 # AI MODELS & LARGE FILES
 # ===========================================
-# AI Model directories (VERY LARGE - 100MB+ each)
-models/
+# AI Model directories (moved to CRITICAL EXCLUSIONS above)
 %CD%/
-*.bin
-*.safetensors
-*.onnx
-*.pt
-*.pth
-*.ckpt
-*.h5
-*.hdf5
-*.pb
-*.tflite
-*.mlmodel
-*.mar
-*.model
 
 # Hugging Face models
 transformers_cache/
@@ -101,9 +108,10 @@ torch_cache/
 # ===========================================
 # DATA FILES
 # ===========================================
-# Large data files
+# Large data files (but allow important project data)
 *.csv
-*.json
+# Allow important JSON files for project functionality
+# *.json
 *.xml
 *.xlsx
 *.xls
@@ -113,10 +121,11 @@ torch_cache/
 *.mdb
 *.accdb
 
-# Log files
-*.log
+# Log files (but allow important project logs)
+# *.log
 logs/
-hr_notifications.log
+# Allow important project log files
+# hr_notifications.log
 
 # Backup files
 *.bak
@@ -128,8 +137,8 @@ hr_notifications.log
 # ===========================================
 # DOCUMENTS & MEDIA
 # ===========================================
-# PDF files (can be large)
-*.pdf
+# PDF files (can be large) - but allow important project PDFs
+# *.pdf
 
 # Office documents
 *.doc
@@ -203,15 +212,16 @@ htmlcov/
 .coverage
 .pytest_cache/
 
-# Test files
-test_*.py
-*_test.py
+# Test files (but allow important project test files)
+# test_*.py
+# *_test.py
 *.test.js
 *.test.ts
 *.spec.js
 *.spec.ts
 __tests__/
-tests/
+# Allow project tests directory
+# tests/
 
 # ===========================================
 # CACHE & TEMPORARY FILES
@@ -265,8 +275,8 @@ build/
 org_data/employees.csv
 org_data/*.pdf
 
-# Generated test files
-test_fixes.py
+# Generated test files (but allow important project test files)
+# test_fixes.py
 
 # ===========================================
 # MONITORING & ANALYTICS

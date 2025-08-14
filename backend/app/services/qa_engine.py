@@ -49,13 +49,13 @@ class HybridQAEngine:
                 logger.warning("⚠️ GOOGLE_GEMINI_API_KEY not found in environment variables")
                 return
             
-            genai.configure(api_key=api_key)
-            self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
-            logger.info("✅ Gemini model initialized successfully")
+                genai.configure(api_key=api_key)
+                self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                logger.info("✅ Gemini model initialized successfully")
         except Exception as e:
             logger.error(f"❌ Failed to initialize Gemini model: {str(e)}")
             self.gemini_model = None
-    
+
     def _initialize_sentence_transformer(self):
         """Initialize sentence transformer for semantic search"""
         try:
@@ -150,7 +150,7 @@ class HybridQAEngine:
                 logger.info(f"✅ Successfully computed embeddings for {len(self.qa_embeddings)} questions")
             else:
                 logger.warning("⚠️ Could not compute embeddings - sentence model not available or dataset empty")
-                
+            
         except Exception as e:
             logger.error(f"❌ Failed to load QA dataset: {str(e)}")
             import traceback
@@ -184,7 +184,7 @@ class HybridQAEngine:
                 }
             
             return None
-            
+                
         except Exception as e:
             logger.error(f"❌ Error in semantic search: {str(e)}")
             import traceback
@@ -217,7 +217,7 @@ class HybridQAEngine:
                 return response.text.strip()
             else:
                 return "I apologize, but I couldn't generate a response. Please try rephrasing your question."
-                
+            
         except Exception as e:
             logger.error(f"❌ Gemini API error: {str(e)}")
             return "I apologize, but I'm experiencing technical difficulties. Please try again later."
