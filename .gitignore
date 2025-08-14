@@ -9,6 +9,22 @@
 .env.production.local
 .env.*.local
 
+# AI Models (VERY LARGE - 100MB+ each) - Exclude from Git
+models/
+*.bin
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.hdf5
+*.pb
+*.tflite
+*.mlmodel
+*.mar
+*.model
+
 
 # ===========================================
 # DEPENDENCIES
