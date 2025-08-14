@@ -9,7 +9,7 @@ import logging
 
 from ..services.certificate_generator import generate_bonafide_pdf
 from ..services.employee_validator import EmployeeValidator
-from ..services.db import Database
+from ..services.db import EmployeeDB
 from ..config import auth_disabled
 
 # Configure logging
@@ -20,16 +20,16 @@ router = APIRouter()
 
 # Initialize services with better error handling
 db = None
-validator = None
+employee_validator = None
 
 def initialize_services():
     """Initialize certificate services with enhanced error handling"""
-    global db, validator
+    global db, employee_validator
     
     try:
         # Initialize database
         try:
-            db = Database()
+            db = EmployeeDB()
             logger.info("✅ Database initialized successfully")
         except Exception as e:
             logger.error(f"❌ Failed to initialize database: {str(e)}")
@@ -37,13 +37,13 @@ def initialize_services():
         
         # Initialize employee validator
         try:
-            validator = EmployeeValidator()
+            employee_validator = EmployeeValidator()
             logger.info("✅ Employee validator initialized successfully")
         except Exception as e:
             logger.error(f"❌ Failed to initialize employee validator: {str(e)}")
-            validator = None
+            employee_validator = None
             
-        if db and validator:
+        if db and employee_validator:
             logger.info("✅ All certificate services initialized successfully")
         else:
             logger.warning("⚠️ Some certificate services failed to initialize")
@@ -51,7 +51,7 @@ def initialize_services():
     except Exception as e:
         logger.error(f"❌ Failed to initialize certificate services: {str(e)}")
         db = None
-        validator = None
+        employee_validator = None
 
 # Initialize services on module load
 initialize_services()
@@ -161,7 +161,7 @@ async def get_employee_suggestions(partial_name: str, limit: int = 5, request: R
         logger.info(f"🔍 Employee suggestions request from {client_ip}: {partial_name}")
         
         # Check if services are available
-        if not validator:
+        if not employee_validator:
             logger.error("Employee validator not available")
             raise HTTPException(status_code=503, detail="Employee search service is temporarily unavailable")
         
@@ -180,7 +180,7 @@ async def get_employee_suggestions(partial_name: str, limit: int = 5, request: R
             logger.info(f"Invalid limit parameter, using default: {limit}")
         
         # Get suggestions
-        suggestions = validator.get_employee_suggestions(partial_name, limit)
+        suggestions = employee_validator.get_employee_suggestions(partial_name, limit)
         
         # Log success
         response_time = (datetime.now() - start_time).total_seconds()
@@ -210,7 +210,7 @@ async def validate_employee(employee_data: dict, request: Request = None):
         logger.info(f"✅ Employee validation request from {client_ip}")
         
         # Check if services are available
-        if not validator:
+        if not employee_validator:
             logger.error("Employee validator not available")
             raise HTTPException(status_code=503, detail="Employee validation service is temporarily unavailable")
         
@@ -220,7 +220,7 @@ async def validate_employee(employee_data: dict, request: Request = None):
             raise HTTPException(status_code=400, detail="Employee data must be a valid dictionary")
         
         # Perform validation
-        validation_result = validator.validate_employee(employee_data)
+        validation_result = employee_validator.validate_employee(employee_data)
         
         # Log success
         response_time = (datetime.now() - start_time).total_seconds()
@@ -251,7 +251,7 @@ async def get_employee_by_id(employee_id: str, request: Request = None):
         logger.info(f"👤 Employee lookup request from {client_ip}: {employee_id}")
         
         # Check if services are available
-        if not validator:
+        if not employee_validator:
             logger.error("Employee validator not available")
             raise HTTPException(status_code=503, detail="Employee lookup service is temporarily unavailable")
         
@@ -265,7 +265,7 @@ async def get_employee_by_id(employee_id: str, request: Request = None):
         employee_id = employee_id.strip()
         
         # Get employee data
-        employee = validator.get_employee_by_id(employee_id)
+        employee = employee_validator.get_employee_by_id(employee_id)
         
         # Log success
         response_time = (datetime.now() - start_time).total_seconds()
@@ -303,17 +303,17 @@ async def certificate_health_check():
             "timestamp": datetime.now().isoformat(),
             "services": {
                 "database": db is not None,
-                "employee_validator": validator is not None
+                "employee_validator": employee_validator is not None
             }
         }
         
-        if not db or not validator:
+        if not db or not employee_validator:
             health_status["status"] = "degraded"
             health_status["warnings"] = []
             
             if not db:
                 health_status["warnings"].append("Database not available")
-            if not validator:
+            if not employee_validator:
                 health_status["warnings"].append("Employee validator not available")
         
         return health_status

@@ -1,15 +1,15 @@
-import json
 import os
 import re
-from pathlib import Path
-from typing import List, Dict, Tuple, Optional
+from typing import Optional, List, Dict, Tuple
 from datetime import datetime
 import asyncio
 import logging
+import json
+from pathlib import Path
 
-import torch
-from sentence_transformers import SentenceTransformer, util
 import google.generativeai as genai
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
 from .document_request_handler import DocumentRequestHandler
 
@@ -18,383 +18,244 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class QASemanticEngine:
+class HybridQAEngine:
     def __init__(self) -> None:
         # Initialize with safe defaults
-        self.questions: List[str] = []
-        self.answers: List[str] = []
-        self.model = None
-        self.q_embeddings = None
         self.gemini_model = None
+        self.sentence_model = None
+        self.qa_dataset = []
+        self.qa_embeddings = []
         self.doc_handler = None
         self._current_document_request = None
         
-        # Load QA dataset with better error handling
+        # Initialize services with better error handling
+        self._initialize_gemini()
+        self._initialize_sentence_transformer()
         self._load_qa_dataset()
         
-        # Initialize sentence transformer with better error handling
-        self._initialize_sentence_transformer()
-        
-        # Initialize Gemini with better error handling
-        self._initialize_gemini()
-        
         # Initialize document request handler with better error handling
-        self._initialize_document_handler()
-        
-        # Define conversational patterns
-        self.greeting_patterns = [
-            r'\b(hi|hello|hey|good morning|good afternoon|good evening)\b',
-            r'\bhow are you\b',
-            r'\bwhat\'?s up\b',
-            r'\bgreetings\b'
-        ]
-        
-        self.farewell_patterns = [
-            r'\b(bye|goodbye|see you|farewell)\b',
-            r'\b(thank you|thanks|thx)\b'
-        ]
-        
-        self.help_patterns = [
-            r'\b(help|what can you do|capabilities|features)\b',
-            r'\b(how does this work|how to use)\b'
-        ]
-
-    def _load_qa_dataset(self) -> None:
-        """Load QA dataset with enhanced error handling"""
-        try:
-            data_path = Path(__file__).resolve().parent.parent / "data" / "qa_dataset.json"
-            
-            if not data_path.exists():
-                logger.warning(f"QA dataset not found at {data_path}")
-                return
-                
-            with open(data_path, "r", encoding="utf-8") as f:
-                qa_data = json.load(f)
-            
-            if not isinstance(qa_data, list):
-                logger.error("QA dataset must be a list")
-                return
-                
-            # Filter out invalid entries
-            valid_qa_pairs = []
-            for item in qa_data:
-                if isinstance(item, dict) and item.get("question") and item.get("answer"):
-                    valid_qa_pairs.append(item)
-            
-            self.questions = [item.get("question", "").strip() for item in valid_qa_pairs]
-            self.answers = [item.get("answer", "").strip() for item in valid_qa_pairs]
-            
-            if len(self.questions) != len(self.answers):
-                logger.error("Questions and answers arrays must have the same length")
-                self.questions = []
-                self.answers = []
-                return
-                
-            logger.info(f"✅ Loaded {len(self.questions)} QA pairs successfully")
-                
-        except Exception as e:
-            logger.error(f"Error loading QA dataset: {str(e)}")
-            self.questions = []
-            self.answers = []
-
-    def _initialize_sentence_transformer(self) -> None:
-        """Initialize sentence transformer with enhanced error handling"""
-        try:
-            # Resolve cache folder explicitly (env override or ./models)
-            project_root = Path(__file__).resolve().parents[3]
-            default_cache = project_root / "models" / "sentence-transformers"
-            cache_folder = os.getenv("SENTENCE_TRANSFORMERS_HOME", str(default_cache))
-
-            # device auto selection
-            self.model = SentenceTransformer(
-                "all-MiniLM-L6-v2",
-                device="cuda" if torch.cuda.is_available() else "cpu",
-                cache_folder=cache_folder,
-            )
-            
-            # Only create embeddings if we have questions
-            if self.questions and len(self.questions) > 0:
-                self.q_embeddings = self.model.encode(self.questions, convert_to_tensor=True, device=self.model.device)
-                logger.info("✅ Sentence transformer initialized successfully")
-            else:
-                logger.warning("No questions available for embeddings")
-                
-        except Exception as e:
-            logger.error(f"Error initializing sentence transformer: {str(e)}")
-            self.model = None
-            self.q_embeddings = None
-
-    def _initialize_gemini(self) -> None:
-        """Initialize Gemini with enhanced error handling"""
-        try:
-            api_key = os.getenv("GOOGLE_GEMINI_API_KEY")
-            if api_key:
-                genai.configure(api_key=api_key)
-                self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
-                logger.info("✅ Gemini model initialized successfully")
-            else:
-                logger.warning("GOOGLE_GEMINI_API_KEY not found - Gemini features disabled")
-                self.gemini_model = None
-        except Exception as e:
-            logger.error(f"Error initializing Gemini: {str(e)}")
-            self.gemini_model = None
-
-    def _initialize_document_handler(self) -> None:
-        """Initialize document request handler with enhanced error handling"""
         try:
             self.doc_handler = DocumentRequestHandler()
             logger.info("✅ Document request handler initialized successfully")
         except Exception as e:
-            logger.error(f"Error initializing document request handler: {str(e)}")
+            logger.error(f"❌ Failed to initialize document request handler: {str(e)}")
             self.doc_handler = None
-
-    def _is_greeting(self, query: str) -> bool:
-        """Check if the query is a greeting"""
-        if not query or not isinstance(query, str):
-            return False
-            
-        query_lower = query.lower().strip()
-        for pattern in self.greeting_patterns:
-            if re.search(pattern, query_lower):
-                return True
-        return False
-
-    def _is_farewell(self, query: str) -> bool:
-        """Check if the query is a farewell or thank you"""
-        if not query or not isinstance(query, str):
-            return False
-            
-        query_lower = query.lower().strip()
-        for pattern in self.farewell_patterns:
-            if re.search(pattern, query_lower):
-                return True
-        return False
-
-    def _is_help_request(self, query: str) -> bool:
-        """Check if the query is asking for help"""
-        if not query or not isinstance(query, str):
-            return False
-            
-        query_lower = query.lower().strip()
-        for pattern in self.help_patterns:
-            if re.search(pattern, query_lower):
-                return True
-        return False
     
-    def _is_document_details_submission(self, query: str) -> bool:
-        """Check if the query contains document details submission"""
-        if not query or not isinstance(query, str):
-            return False
+    def _initialize_gemini(self):
+        """Initialize Gemini model with enhanced error handling"""
+        try:
+            api_key = os.getenv("GOOGLE_GEMINI_API_KEY")
+            if not api_key:
+                logger.warning("⚠️ GOOGLE_GEMINI_API_KEY not found in environment variables")
+                return
             
-        # Check if we have a current document request
-        if not hasattr(self, '_current_document_request') or not self._current_document_request:
-            return False
+            genai.configure(api_key=api_key)
+            self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            logger.info("✅ Gemini model initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize Gemini model: {str(e)}")
+            self.gemini_model = None
+    
+    def _initialize_sentence_transformer(self):
+        """Initialize sentence transformer for semantic search"""
+        try:
+            # Set cache directory to use existing models
+            import os
+            models_dir = Path(__file__).parent.parent.parent.parent / "models"
+            cache_dir = models_dir / "sentence-transformers"
+            
+            # Set environment variables for model caching
+            os.environ["SENTENCE_TRANSFORMERS_HOME"] = str(cache_dir)
+            os.environ["HF_HOME"] = str(models_dir)
+            os.environ["TRANSFORMERS_CACHE"] = str(models_dir / "transformers")
+            
+            # Check if model files exist
+            model_path = cache_dir / "models--sentence-transformers--all-MiniLM-L6-v2"
+            logger.info(f"🔍 Checking model path: {model_path}")
+            logger.info(f"🔍 Cache directory: {cache_dir}")
+            logger.info(f"🔍 Models directory: {models_dir}")
+            
+            if not model_path.exists():
+                logger.warning(f"⚠️ Model not found at {model_path}, will download")
+            else:
+                logger.info(f"✅ Found existing model at {model_path}")
+            
+            # Try to use local model path first
+            model_path = cache_dir / "models--sentence-transformers--all-MiniLM-L6-v2" / "snapshots" / "c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
+            if model_path.exists():
+                logger.info(f"✅ Using local model from {model_path}")
+                self.sentence_model = SentenceTransformer(str(model_path))
+            else:
+                logger.info("⚠️ Local model not found, using cache directory")
+                self.sentence_model = SentenceTransformer('all-MiniLM-L6-v2', cache_folder=str(cache_dir))
+            logger.info("✅ Sentence transformer initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize sentence transformer: {str(e)}")
+            self.sentence_model = None
+    
+    def _load_qa_dataset(self):
+        """Load QA dataset and pre-compute embeddings"""
+        try:
+            qa_file = Path(__file__).parent.parent / "data" / "qa_dataset.json"
+            logger.info(f"🔍 Loading QA dataset from: {qa_file}")
+            
+            if not qa_file.exists():
+                logger.warning("⚠️ QA dataset file not found")
+                return
+            
+            # Check file size
+            file_size = qa_file.stat().st_size
+            logger.info(f"📁 QA dataset file size: {file_size} bytes")
+            
+            # Read file content first to check for issues
+            with open(qa_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            logger.info(f"📄 File content length: {len(content)} characters")
+            
+            # Parse JSON with better error handling
+            try:
+                self.qa_dataset = json.loads(content)
+                logger.info(f"📊 Successfully parsed JSON with {len(self.qa_dataset)} QA pairs")
+            except json.JSONDecodeError as e:
+                logger.error(f"❌ JSON parsing error: {str(e)}")
+                logger.error(f"❌ Error at line {e.lineno}, column {e.colno}")
+                # Try to show the problematic area
+                lines = content.split('\n')
+                if e.lineno <= len(lines):
+                    logger.error(f"❌ Problematic line {e.lineno}: {lines[e.lineno-1]}")
+                return
+            
+            # Validate dataset structure
+            if not isinstance(self.qa_dataset, list):
+                logger.error("❌ QA dataset is not a list")
+                self.qa_dataset = []
+                return
+            
+            # Count valid QA pairs
+            valid_pairs = 0
+            for i, qa in enumerate(self.qa_dataset):
+                if isinstance(qa, dict) and 'question' in qa and 'answer' in qa:
+                    valid_pairs += 1
+                else:
+                    logger.warning(f"⚠️ Invalid QA pair at index {i}: {qa}")
+            
+            logger.info(f"📊 Found {valid_pairs} valid QA pairs out of {len(self.qa_dataset)} total entries")
+            
+            # Pre-compute embeddings for all questions
+            if self.sentence_model and self.qa_dataset:
+                questions = [qa['question'] for qa in self.qa_dataset if isinstance(qa, dict) and 'question' in qa]
+                logger.info(f"🔄 Computing embeddings for {len(questions)} questions...")
+                self.qa_embeddings = self.sentence_model.encode(questions)
+                logger.info(f"✅ Successfully computed embeddings for {len(self.qa_embeddings)} questions")
+            else:
+                logger.warning("⚠️ Could not compute embeddings - sentence model not available or dataset empty")
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to load QA dataset: {str(e)}")
+            import traceback
+            logger.error(f"❌ Traceback: {traceback.format_exc()}")
+            self.qa_dataset = []
+            self.qa_embeddings = []
+    
+    def _find_similar_question(self, user_question: str, threshold: float = 0.8) -> Optional[Dict]:
+        """Find most similar question from dataset using semantic search"""
+        if not self.sentence_model or not self.qa_embeddings or not self.qa_dataset:
+            return None
         
-        # Check if the query contains typical document details
-        query_lower = query.lower()
-        detail_indicators = [
-            'name:', 'employee', 'id:', 'purpose:', 'joining', 'leaving',
-            'salary', 'period:', 'financial', 'year:', 'destination',
-            'travel', 'dates:', 'visa', 'noc', 'reason:', 'damaged',
-            'lost', 'replacement', 'insurance', 'medical'
-        ]
-        
-        return any(indicator in query_lower for indicator in detail_indicators)
-
-    def _get_contextual_response(self, query: str) -> Optional[str]:
-        """Get contextual responses based on query type"""
-        if not query or not isinstance(query, str):
+        try:
+            # Encode user question
+            user_embedding = self.sentence_model.encode([user_question])
+            
+            # Calculate similarities
+            similarities = np.dot(self.qa_embeddings, user_embedding.T).flatten()
+            
+            # Find best match
+            best_idx = np.argmax(similarities)
+            best_similarity = float(similarities[best_idx])  # Convert to float to avoid array issues
+            
+            logger.info(f"🔍 Best similarity found: {best_similarity:.3f} (threshold: {threshold})")
+            
+            if best_similarity >= threshold:
+                return {
+                    'qa_pair': self.qa_dataset[best_idx],
+                    'similarity': best_similarity,
+                    'index': int(best_idx)  # Convert to int to avoid array issues
+                }
+            
             return None
             
-        query_lower = query.lower().strip()
+        except Exception as e:
+            logger.error(f"❌ Error in semantic search: {str(e)}")
+            import traceback
+            logger.error(f"❌ Traceback: {traceback.format_exc()}")
+            return None
+    
+    async def _gemini_answer(self, question: str) -> str:
+        """Generate answer using Gemini API"""
+        if not self.gemini_model:
+            return "I apologize, but I'm currently unable to process your request. Please try again later."
         
-        # Greetings
-        if self._is_greeting(query):
-            current_hour = datetime.now().hour
-            if 5 <= current_hour < 12:
-                return "Good morning! ☀️ Welcome to Reliance Jio Infotech Solutions! I'm your AI assistant, ready to help you with HR questions, document processing, and certificate generation. How can I assist you today?"
-            elif 12 <= current_hour < 17:
-                return "Good afternoon! 🌤️ I hope your day at Reliance Jio Infotech Solutions is going well! I'm ready to assist you with HR queries, document processing, or any other questions you might have. What do you need help with?"
-            else:
-                return "Good evening! 🌙 I hope you had a great day at Reliance Jio Infotech Solutions! I'm still here to help you with any questions about policies, documents, or certificates. What can I assist you with?"
-        
-        # Farewells
-        elif self._is_farewell(query):
-            if 'thank' in query_lower:
-                return "You're very welcome! 🙏 I'm here to make your experience at Reliance Jio Infotech Solutions as smooth as possible. If you need anything else - whether it's HR questions, document processing, or certificate generation - just let me know. Have a great day!"
-            else:
-                return "Goodbye! 👋 Thank you for using the Reliance Jio Infotech Solutions AI assistant. I hope I was able to help you today. Have a wonderful day, and don't hesitate to return if you need assistance with HR questions, document processing, or certificates!"
-        
-        # Help requests
-        elif self._is_help_request(query):
-            return "I'm here to help! 🤖 Here's how I can assist you at Reliance Jio Infotech Solutions:\n\n**🎯 Quick Start:**\n• **HR Questions**: Just ask about policies, benefits, procedures\n• **PDF Processing**: Upload any PDF for summarization\n• **Certificates**: Fill the form to generate employee certificates\n\n**💡 Mode Switching:**\n• Click the mode buttons above (HR Q&A, PDF, Certificate)\n• Or type: 'qa', 'summarize', 'certificate'\n\n**🔍 Employee Search:**\n• 'search employee [name/ID]' - Find employee details\n• 'fill form for [name/ID]' - Auto-fill certificate form\n\n**📞 Need More Help?**\n• Ask me anything about company policies\n• I can guide you through any process\n• Contact HR at hr@reliancejio.com for complex issues\n\nWhat would you like to know?"
-        
-        return None
-
-    async def _generate_dynamic_answer(self, query: str, best_match_idx: int, similarity_score: float) -> str:
-        """Generate dynamic answer using AI when exact match not found"""
         try:
-            if not self.gemini_model:
-                return f"I understand you're asking about '{query}'. While I don't have a specific answer in my database, I can help you with general HR questions. Please contact HR at hr@reliancejio.com for specific queries, or try asking about common topics like attendance, leave, benefits, or IT policies."
-            
-            # Get the most similar question and answer as context with bounds checking
-            similar_question = "general HR question"
-            similar_answer = "Please contact HR for assistance."
-            
-            if (best_match_idx >= 0 and 
-                best_match_idx < len(self.questions) and 
-                best_match_idx < len(self.answers)):
-                similar_question = self.questions[best_match_idx]
-                similar_answer = self.answers[best_match_idx]
-            
+            # Enhanced prompt for better responses
             prompt = f"""
-            You are an HR assistant for Reliance Jio Infotech Solutions. A user asked: "{query}"
+            You are an AI assistant for Reliance Jio Infotech Solutions. 
+            Answer the following question about company policies, procedures, or general HR matters.
+            Be helpful, professional, and accurate. If you're not sure about something, say so.
             
-            The most similar question in our database is: "{similar_question}"
-            With answer: "{similar_answer}"
+            Question: {question}
             
-            Generate a helpful, accurate answer for the user's question. If the similar question is relevant, use it as context. If not, provide a general but helpful response about Reliance Jio Infotech Solutions policies.
-            
-            Make your answer:
-            - Professional and company-branded
-            - Include contact information (hr@reliancejio.com)
-            - Use emojis and formatting for readability
-            - Be concise but comprehensive
-            
-            Answer:
+            Please provide a clear, helpful response:
             """
             
             response = await asyncio.to_thread(
-                self.gemini_model.generate_content, prompt
+                self.gemini_model.generate_content,
+                prompt
             )
             
-            if response and hasattr(response, 'text') and response.text:
+            if response and response.text:
                 return response.text.strip()
             else:
-                raise Exception("Invalid response from Gemini")
-            
-        except Exception as e:
-            logger.error(f"Error generating dynamic answer: {e}")
-            return f"I understand you're asking about '{query}'. While I don't have a specific answer in my database, I can help you with general HR questions. Please contact HR at hr@reliancejio.com for specific queries, or try asking about common topics like attendance, leave, benefits, or IT policies."
-
-    async def _handle_document_details_submission(self, details: str) -> str:
-        """Handle document details submission and generate PDF"""
-        try:
-            if not self.doc_handler:
-                return "❌ **Error:** Document request handler is not available. Please try again later."
-                
-            if not hasattr(self, '_current_document_request') or not self._current_document_request:
-                return "❌ **Error:** No document request in progress. Please start a new document request."
-                
-            doc_type = self._current_document_request.get("doc_type")
-            doc_name = self._current_document_request.get("doc_name")
-            
-            if not doc_type or not doc_name:
-                return "❌ **Error:** Invalid document request. Please try again."
-            
-            # Validate details
-            is_valid, validation_message = self.doc_handler.validate_document_details(details, doc_type)
-            if not is_valid:
-                return f"❌ **Validation Error:** {validation_message}\n\nPlease provide the required information."
-            
-            # Submit document request and generate PDF
-            request = self.doc_handler.submit_document_request(doc_type, doc_name, details)
-            
-            # Clear current document request
-            self._current_document_request = None
-            
-            # Return appropriate message based on PDF generation status
-            if request and request.get("pdf_generated", False):
-                return self.doc_handler.get_confirmation_message(
-                    doc_name, 
-                    request.get("id", "unknown"), 
-                    pdf_generated=True
-                )
-            else:
-                return self.doc_handler.get_confirmation_message(
-                    doc_name, 
-                    request.get("id", "unknown") if request else "unknown", 
-                    pdf_generated=False,
-                    error=request.get("error") if request else "Unknown error"
-                )
+                return "I apologize, but I couldn't generate a response. Please try rephrasing your question."
                 
         except Exception as e:
-            # Clear current document request on error
-            self._current_document_request = None
-            logger.error(f"Error processing document request: {str(e)}")
-            return f"❌ **Error processing document request:** {str(e)}\n\nPlease try again or contact HR at hr@reliancejio.com for assistance."
-
-    async def answer(self, query: str) -> str:
-        """Enhanced answer method with better conversational handling and error handling"""
-        try:
-            # Enhanced input validation
-            if not query or not isinstance(query, str):
-                return "I didn't receive a message. Please try again."
-                
-            query = query.strip()
-            
-            # Validate input
-            if len(query) == 0:
-                return "I didn't receive a message. Please try again."
-            
-            # Check for document requests first
-            if self.doc_handler and self.doc_handler.is_document_request(query):
-                return self.doc_handler.get_document_list()
-            
-            # Check for document choice (numbers 1-16)
-            if query.strip().isdigit() and 1 <= int(query.strip()) <= 16:
-                if self.doc_handler:
-                    is_valid, doc_type, doc_name = self.doc_handler.validate_document_choice(query)
-                    if is_valid:
-                        # Store current document request
-                        self._current_document_request = {
-                            "doc_type": doc_type,
-                            "doc_name": doc_name
-                        }
-                        # Return special response to trigger form display
-                        return f"SHOW_FORM:{doc_type}:{doc_name}"
-                    else:
-                        return "Please select a valid document number (1-16)."
-                else:
-                    return "Document request system is not available. Please try again later."
-            
-            # Check for document details submission (when user provides details after document selection)
-            if hasattr(self, '_current_document_request') and self._current_document_request:
-                return await self._handle_document_details_submission(query)
-            
-            # Check for contextual responses first
-            contextual_response = self._get_contextual_response(query)
-            if contextual_response:
-                return contextual_response
-            
-            # Use semantic search for policy-related questions
-            if (self.model and 
-                self.q_embeddings is not None and 
-                len(self.questions) > 0 and 
-                len(self.answers) > 0):
-                try:
-                    query_embedding = self.model.encode(query, convert_to_tensor=True, device=self.model.device)
-                    similarity_scores = util.cos_sim(query_embedding, self.q_embeddings)[0]
-                    best_match_idx = int(similarity_scores.argmax())
-                    best_score = float(similarity_scores[best_match_idx])
-                    
-                    # Lower threshold for better matching
-                    if best_score >= 0.6 and best_match_idx < len(self.answers):
-                        return self.answers[best_match_idx]
-                    
-                    # If no good match found, try dynamic answer generation
-                    if self.gemini_model and best_score >= 0.4:  # Lower threshold for AI generation
-                        return await self._generate_dynamic_answer(query, best_match_idx, best_score)
-                    
-                except Exception as search_error:
-                    logger.error(f"Error in semantic search: {search_error}")
-                    # Continue to fallback response
-            
-            # If no good match found, provide helpful response
-            return "I understand you're asking about something, but I'm not finding a specific match in our knowledge base. 🤔\n\n**💡 Here's how I can help:**\n• **HR Policies**: Ask about attendance, leave, benefits, conduct, etc.\n• **IT Policies**: Ask about acceptable use, passwords, devices, software\n• **Document Requests**: Type 'document' or 'I need a document' to request official documents\n• **General Help**: Type 'help' to see all my capabilities\n• **Mode Switching**: Use the buttons above or type 'qa', 'summarize', 'certificate'\n\n**📞 For specific questions not covered here:**\nPlease contact HR at hr@reliancejio.com or IT support for technical issues.\n\nWhat would you like to know about?"
-            
-        except Exception as e:
-            logger.error(f"Error in QA engine answer method: {str(e)}")
-            return "I apologize, but I'm experiencing technical difficulties right now. Please try again in a moment or contact HR at hr@reliancejio.com for assistance."
+            logger.error(f"❌ Gemini API error: {str(e)}")
+            return "I apologize, but I'm experiencing technical difficulties. Please try again later."
+    
+    async def answer(self, question: str) -> str:
+        """Main method to answer questions using hybrid approach"""
+        if not question or not question.strip():
+            return "Please provide a question so I can help you."
+        
+        question = question.strip()
+        
+        # Step 1: Check for document request keywords
+        if self.doc_handler and any(keyword in question.lower() for keyword in ['document', 'need document', 'request document', 'get document']):
+            try:
+                return await self.doc_handler.handle_document_request(question)
+            except Exception as e:
+                logger.error(f"❌ Document request error: {str(e)}")
+        
+        # Step 2: Try semantic search in local dataset
+        similar_qa = self._find_similar_question(question)
+        
+        if similar_qa and similar_qa['similarity'] > 0.8:
+            logger.info(f"✅ Found similar question in dataset (similarity: {similar_qa['similarity']:.3f})")
+            return similar_qa['qa_pair']['answer']
+        
+        # Step 3: Use Gemini API for complex questions
+        logger.info("🔄 Using Gemini API for complex question")
+        return await self._gemini_answer(question)
+    
+    def get_health_status(self) -> Dict:
+        """Get health status of QA engine components"""
+        return {
+            "gemini_model": self.gemini_model is not None,
+            "sentence_model": self.sentence_model is not None,
+            "qa_dataset_loaded": len(self.qa_dataset) > 0,
+            "qa_embeddings_ready": len(self.qa_embeddings) > 0,
+            "document_handler": self.doc_handler is not None,
+            "total_qa_pairs": len(self.qa_dataset)
+        }
 
 

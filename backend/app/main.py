@@ -28,10 +28,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files
-project_root = Path(__file__).parent.parent.parent
-static_path = project_root / "static"
-app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+# Mount static files (commented out since static directory was removed)
+# project_root = Path(__file__).parent.parent.parent
+# static_path = project_root / "static"
+# app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
 app.include_router(health.router)
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
@@ -51,6 +51,6 @@ async def root():
         "endpoints": {
             "health": "/health",
             "ai_health": "/gemini/health",
-            "chatbot": "/static/unified_chatbot.html"
+            "chatbot": "React frontend available at http://localhost:3000"
         }
     }

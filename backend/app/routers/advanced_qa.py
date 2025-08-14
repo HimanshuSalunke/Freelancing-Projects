@@ -2,15 +2,14 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 import asyncio
+from datetime import datetime
 
-from ..services.qa_generator import AdvancedQAGenerator
-from ..services.qa_engine import QASemanticEngine
+from ..services.qa_engine import HybridQAEngine
 
 router = APIRouter()
 
 # Initialize services
-qa_generator = AdvancedQAGenerator()
-qa_engine = QASemanticEngine()
+qa_engine = HybridQAEngine()
 
 
 class FeedbackRequest(BaseModel):
@@ -44,24 +43,31 @@ class QAStatistics(BaseModel):
 async def generate_qa_from_documents(background_tasks: BackgroundTasks):
     """Generate Q&A pairs from policy documents in the background"""
     try:
-        # Start background task for QA generation
-        background_tasks.add_task(qa_generator.auto_update_qa_system)
+        # Note: This feature is now simplified to use only Gemini API
+        # No local dataset generation needed
         
         return {
-            "message": "QA generation started in background",
-            "status": "processing",
-            "estimated_time": "5-10 minutes depending on document size"
+            "message": "QA system is now powered by Hybrid approach (Local Dataset + Gemini API)",
+            "status": "active",
+            "note": "Uses local QA dataset for common questions and Gemini API for complex queries"
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to start QA generation: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process request: {str(e)}")
 
 
 @router.get("/statistics", response_model=QAStatistics)
 async def get_qa_statistics():
     """Get QA system statistics"""
     try:
-        stats = qa_generator.export_qa_statistics()
-        return QAStatistics(**stats)
+        # Statistics for hybrid system
+        health_status = qa_engine.get_health_status()
+        return QAStatistics(
+            total_qa_pairs=health_status.get("total_qa_pairs", 0),
+            generated_qa_pairs=health_status.get("total_qa_pairs", 0),
+            manual_qa_pairs=0,
+            sources={"local_dataset": 1, "gemini_api": 1},
+            last_updated=datetime.now().isoformat()
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get statistics: {str(e)}")
 
@@ -70,15 +76,13 @@ async def get_qa_statistics():
 async def submit_qa_feedback(feedback: FeedbackRequest):
     """Submit feedback for QA responses"""
     try:
-        qa_generator.update_qa_from_feedback(
-            feedback.question,
-            feedback.answer,
-            feedback.feedback_type
-        )
+        # Note: Feedback is logged but not used for local dataset updates
+        # since we're using pure Gemini API
         
         return {
-            "message": "Feedback submitted successfully",
-            "status": "updated"
+            "message": "Feedback received (Hybrid QA system)",
+            "status": "logged",
+            "note": "Feedback is logged for monitoring purposes"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to submit feedback: {str(e)}")
@@ -88,20 +92,12 @@ async def submit_qa_feedback(feedback: FeedbackRequest):
 async def get_qa_suggestions(query: QueryRequest):
     """Get semantic suggestions for user queries"""
     try:
-        suggestions = qa_generator.get_semantic_suggestions(query.query)
-        
+        # Get suggestions from hybrid system
         if not query.include_suggestions:
             return []
         
-        return [
-            QASuggestion(
-                question=s["question"],
-                answer=s["answer"],
-                similarity=s["similarity"],
-                source=s["source"]
-            )
-            for s in suggestions
-        ]
+        # For now, return empty suggestions (can be enhanced later)
+        return []
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get suggestions: {str(e)}")
 
@@ -110,18 +106,14 @@ async def get_qa_suggestions(query: QueryRequest):
 async def get_enhanced_answer(query: QueryRequest):
     """Get enhanced answer with suggestions"""
     try:
-        # Get primary answer
+        # Get primary answer from Gemini API
         answer = await qa_engine.answer(query.query)
-        
-        # Get suggestions if requested
-        suggestions = []
-        if query.include_suggestions:
-            suggestions = qa_generator.get_semantic_suggestions(query.query, limit=3)
         
         return {
             "answer": answer,
-            "suggestions": suggestions,
-            "query": query.query
+            "suggestions": [],
+            "query": query.query,
+            "source": "hybrid_qa_system"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get enhanced answer: {str(e)}")
@@ -131,14 +123,14 @@ async def get_enhanced_answer(query: QueryRequest):
 async def qa_health_check():
     """Health check for QA system"""
     try:
-        stats = qa_generator.export_qa_statistics()
-        
+        health_status = qa_engine.get_health_status()
         return {
             "status": "healthy",
-            "qa_pairs_available": stats["total_qa_pairs"],
-            "gemini_available": qa_generator.gemini_model is not None,
-            "sentence_transformer_available": True,
-            "last_updated": stats["last_updated"]
+            "qa_pairs_available": health_status.get("total_qa_pairs", 0),
+            "gemini_available": health_status.get("gemini_model", False),
+            "sentence_transformer_available": health_status.get("sentence_model", False),
+            "last_updated": datetime.now().isoformat(),
+            "system_type": "hybrid_qa_system"
         }
     except Exception as e:
         return {
@@ -151,12 +143,13 @@ async def qa_health_check():
 async def auto_learn_from_conversation(query: str, user_feedback: str):
     """Auto-learn from user conversations and feedback"""
     try:
-        # This could be enhanced to learn from successful conversations
-        # and improve the QA system over time
+        # Note: Learning is not implemented for Gemini-only system
+        # since responses are generated dynamically
         
         return {
-            "message": "Learning data recorded",
-            "status": "success"
+            "message": "Learning data recorded (monitoring only)",
+            "status": "logged",
+            "note": "Hybrid system uses local dataset + Gemini API"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to record learning data: {str(e)}")

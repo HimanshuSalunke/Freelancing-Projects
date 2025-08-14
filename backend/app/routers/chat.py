@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 
 from ..services.bad_language_filter import BadLanguageFilter
+from ..services.qa_engine import HybridQAEngine
 from ..config import auth_disabled
 
 # Configure logging
@@ -16,10 +17,11 @@ router = APIRouter()
 
 # Initialize services with better error handling
 bad_filter = None
+qa_engine = None
 
 def initialize_services():
     """Initialize chat services with enhanced error handling"""
-    global bad_filter
+    global bad_filter, qa_engine
     
     try:
         # Initialize bad language filter
@@ -30,14 +32,23 @@ def initialize_services():
             logger.error(f"❌ Failed to initialize bad language filter: {str(e)}")
             bad_filter = None
         
-        if bad_filter:
+        # Initialize QA engine
+        try:
+            qa_engine = HybridQAEngine()
+            logger.info("✅ QA engine initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize QA engine: {str(e)}")
+            qa_engine = None
+        
+        if bad_filter and qa_engine:
             logger.info("✅ Chat services initialized successfully")
         else:
-            logger.warning("⚠️ Bad language filter failed to initialize")
+            logger.warning("⚠️ Some chat services failed to initialize")
             
     except Exception as e:
         logger.error(f"❌ Failed to initialize chat services: {str(e)}")
         bad_filter = None
+        qa_engine = None
 
 # Initialize services on module load
 initialize_services()
@@ -157,9 +168,13 @@ async def chat(req: ChatRequest, request: Request) -> ChatResponse:
                 logger.error(f"Error in language filter: {str(filter_error)}")
                 # Continue processing even if filter fails
         
-        # Get simple response - no AI models
+        # Get AI-powered response using QA engine
         try:
-            answer = get_simple_response(req.message)
+            if qa_engine:
+                answer = await qa_engine.answer(req.message)
+            else:
+                # Fallback to simple response if QA engine is not available
+                answer = get_simple_response(req.message)
             
             # Ensure response is not empty
             if not answer.strip():
@@ -204,13 +219,20 @@ async def chat_health() -> dict:
             "timestamp": datetime.now().isoformat(),
             "services": {
                 "bad_language_filter": bad_filter is not None,
-                "chat_responses": True  # Simple responses always available
+                "qa_engine": qa_engine is not None,
+                "chat_responses": True  # Responses always available
             }
         }
         
+        warnings = []
         if not bad_filter:
+            warnings.append("Bad language filter not available")
+        if not qa_engine:
+            warnings.append("QA engine not available")
+        
+        if warnings:
             health_status["status"] = "degraded"
-            health_status["warnings"] = ["Bad language filter not available"]
+            health_status["warnings"] = warnings
         
         return health_status
         

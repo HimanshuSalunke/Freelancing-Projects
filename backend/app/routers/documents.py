@@ -3,12 +3,12 @@ import fitz  # PyMuPDF
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pydantic import BaseModel
 from ..config import auth_disabled
-from ..services.summarizer import Summarizer
+from ..services.gemini_summarizer import GeminiSummarizer
 
 router = APIRouter()
 
-# Initialize the summarizer service
-summarizer = Summarizer()
+# Initialize the Gemini summarizer service
+summarizer = GeminiSummarizer()
 
 
 class SummarizeResponse(BaseModel):
@@ -61,36 +61,24 @@ async def upload(file: UploadFile = File(...)):
         if len(content) == 0:
             raise HTTPException(status_code=400, detail="File is empty")
         
-        # Extract text from PDF
+        # Use Gemini summarizer for processing
         try:
-            raw_text = extract_text_from_pdf(content)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Failed to extract text from PDF: {str(e)}")
-        
-        if not raw_text or not raw_text.strip():
-            raise HTTPException(status_code=400, detail="No text content found in PDF")
-        
-        # Generate summary using the proper summarizer service
-        try:
-            summary = summarizer.summarize(raw_text, max_words=250)
+            result = await summarizer.summarize_pdf(file.filename, content)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to generate summary: {str(e)}")
         
-        # Extract keywords
+        # Extract keywords from the result
         try:
-            keywords = extract_keywords(raw_text)
+            keywords = result.key_points if result.key_points else []
         except Exception as e:
             print(f"Warning: Failed to extract keywords: {e}")
             keywords = []
         
-        # Determine document type
-        doc_type = "LONG" if len(raw_text) > 10000 else "MEDIUM" if len(raw_text) > 1000 else "SHORT"
-        
         return {
-            "document_type": doc_type,
-            "executive_summary": summary,
-            "section_summary": [],
-            "table_insights": [],
+            "document_type": result.document_type,
+            "executive_summary": result.executive_summary,
+            "section_summary": result.section_summaries,
+            "table_insights": [{"table": table.title, "insights": f"{table.row_count} rows, {table.col_count} columns"} for table in result.tables],
             "keywords": keywords,
             "patterns": [],
             "anomalies": []

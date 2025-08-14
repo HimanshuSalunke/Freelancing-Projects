@@ -242,7 +242,7 @@ pids
 # ===========================================
 # npm
 .npm
-package-lock.json
+# package-lock.json - KEEP THIS FILE (important for dependency versioning)
 yarn.lock
 pnpm-lock.yaml
 
@@ -255,11 +255,11 @@ build/
 # ===========================================
 # SPECIFIC PROJECT FILES
 # ===========================================
-# Large data files in your project
-backend/app/data/document_requests.json
-backend/app/data/employees.json
-backend/app/data/qa_dataset.json
-backend/app/data/hr_notifications.log
+# Large data files in your project - KEEP THESE (important for chatbot functionality)
+# backend/app/data/document_requests.json
+# backend/app/data/employees.json
+# backend/app/data/qa_dataset.json
+# backend/app/data/hr_notifications.log
 
 # Organization data (contains sensitive employee info)
 org_data/employees.csv
@@ -324,6 +324,7 @@ dmypy.json
 # ===========================================
 # Don't ignore these important files
 !package.json
+!package-lock.json
 !requirements.txt
 !README.md
 !.gitignore
@@ -332,3 +333,40 @@ dmypy.json
 !tailwind.config.js
 !postcss.config.js
 !eslint.config.js
+!next-env.d.ts
+
+# Keep important configuration files
+!*.config.js
+!*.config.ts
+!*.config.json
+
+# Keep important source files
+!app/**/*.tsx
+!app/**/*.ts
+!app/**/*.jsx
+!app/**/*.js
+!components/**/*.tsx
+!components/**/*.ts
+!components/**/*.jsx
+!components/**/*.js
+!lib/**/*.ts
+!lib/**/*.js
+!backend/app/**/*.py
+!backend/app/routers/**/*.py
+!backend/app/services/**/*.py
+
+# Keep important data files (including large ones for chatbot functionality)
+!backend/app/data/qa_dataset.json
+!backend/app/data/bad_words.json
+!backend/app/data/document_requests.json
+!backend/app/data/employees.json
+!backend/app/data/hr_notifications.log
+
+# Keep important documentation and scripts
+!scripts/**/*.py
+!*.md
+!LICENSE
+!.env.example
+!docker-compose*.yml
+!Dockerfile*
+!Procfile
