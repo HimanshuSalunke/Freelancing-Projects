@@ -34,9 +34,20 @@ export default function Home() {
   const [isClient, setIsClient] = useState(false)
   const mainContainerRef = useRef<HTMLDivElement>(null)
 
-  // Handle hydration
+  // Handle hydration and ensure page starts at top
   useEffect(() => {
     setIsClient(true)
+    
+    // Ensure page scrolls to top on load/reload
+    window.scrollTo(0, 0)
+    
+    // Also handle browser back/forward navigation
+    const handleBeforeUnload = () => {
+      window.scrollTo(0, 0)
+    }
+    
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
 
   // Prevent main page scroll when interacting with components

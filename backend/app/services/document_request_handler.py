@@ -92,12 +92,21 @@ class DocumentRequestHandler:
         """Get the prompt for collecting document details"""
         base_prompt = f"You selected {doc_name}. Please provide the following details:\n\n"
         
+        # Add a note about chat-based requests
+        base_prompt += "💡 **Note:** You can provide these details in a simple text format, or use our form-based system for a better experience.\n\n"
+        
         # Different prompts based on document type
         if "bonafide" in doc_name.lower() or "employment verification" in doc_name.lower():
             return base_prompt + "• Full Name\n• Employee ID\n• Purpose (e.g., bank loan, visa application, etc.)\n• Any specific requirements"
         
         elif "experience" in doc_name.lower():
             return base_prompt + "• Full Name\n• Employee ID\n• Date of joining\n• Date of leaving (if applicable)\n• Purpose"
+        
+        elif "offer letter" in doc_name.lower():
+            return base_prompt + "• Full Name\n• Employee ID\n• Position/Designation\n• Department\n• Date of offer\n• Purpose of request"
+        
+        elif "appointment letter" in doc_name.lower():
+            return base_prompt + "• Full Name\n• Employee ID\n• Position/Designation\n• Department\n• Date of appointment\n• Purpose of request"
         
         elif "salary" in doc_name.lower():
             return base_prompt + "• Full Name\n• Employee ID\n• Time period (e.g., last 3 months, specific month)\n• Purpose"

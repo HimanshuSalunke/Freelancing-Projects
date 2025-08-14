@@ -26,10 +26,13 @@ export default function ChatInterface() {
     ])
   }, [])
 
-  // Auto-scroll to bottom - same as HTML version
+  // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
     }
   }, [messages])
 

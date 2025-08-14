@@ -880,3 +880,93 @@ User: anonymous
 Details: {"employeeName":"Jay Nichols","employeeId":"EMP0287","designation":"Customer Support Executive","department":"Operations","joiningDate":"2016-01-04","relievingDate":"","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
 Status: completed
 =====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 14:16:51
+Request ID: DOC_20250814_141651
+Document: Bonafide / Employment Verification Letter
+User: anonymous
+Details: {"employeeName":"Jay Nichols","employeeId":"EMP0287","designation":"Customer Support Executive","department":"Operations","joiningDate":"2016-01-04","relievingDate":"","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 14:17:40
+Request ID: DOC_20250814_141740
+Document: Experience Certificate
+User: anonymous
+Details: {"employeeName":"Edward Nichols","employeeId":"EMP0185","designation":"Sales Manager","department":"Sales","joiningDate":"2018-10-28","relievingDate":"2025-08-14","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 14:41:50
+Request ID: DOC_20250814_144150
+Document: Bonafide / Employment Verification Letter
+User: anonymous
+Details: {"employeeName":"Jay Nichols","employeeId":"EMP0287","designation":"Customer Support Executive","department":"Operations","joiningDate":"2016-01-04","relievingDate":"","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 14:42:45
+Request ID: DOC_20250814_144245
+Document: Experience Certificate
+User: anonymous
+Details: {"employeeName":"John Gibson","employeeId":"EMP0059","designation":"Operations Coordinator","department":"Engineering","joiningDate":"2025-01-14","relievingDate":"2025-08-14","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 14:51:08
+Request ID: DOC_20250814_145108
+Document: Offer Letter Copy
+User: anonymous
+Details: {"employeeName":"Richard Johnson","employeeId":"EMP0136","designation":"Finance Executive","department":"Engineering","joiningDate":"2020-05-13","relievingDate":"","salaryAmount":"55000","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 14:53:43
+Request ID: DOC_20250814_145343
+Document: Bonafide / Employment Verification Letter
+User: test_user
+Details: {"employeeName": "John Doe", "employeeId": "EMP123456", "designation": "Software Engineer", "department": "Engineering", "joiningDate": "2023-01-15", "purpose": "Bank loan application"}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 14:57:27
+Request ID: DOC_20250814_145727
+Document: Experience Certificate
+User: anonymous
+Details: {"employeeName":"Johnathan Farley","employeeId":"EMP0011","designation":"Software Engineer","department":"Sales","joiningDate":"2024-06-13","relievingDate":"2025-08-14","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 15:03:23
+Request ID: DOC_20250814_150323
+Document: Experience Certificate
+User: anonymous
+Details: {"employeeName":"John Dodson","employeeId":"EMP0171","designation":"Admin Officer","department":"Marketing","joiningDate":"2017-08-13","relievingDate":"2024-08-10","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 15:10:58
+Request ID: DOC_20250814_151058
+Document: Bonafide / Employment Verification Letter
+User: anonymous
+Details: {"employeeName": "John Doe", "employeeId": "EMP123456", "designation": "Software Engineer", "department": "Engineering", "joiningDate": "2023-01-15", "purpose": "Bank loan application"}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 15:15:03
+Request ID: DOC_20250814_151502
+Document: Offer Letter Copy
+User: anonymous
+Details: {"employeeName":"Richard Johnson","employeeId":"EMP0136","designation":"Finance Executive","department":"Engineering","joiningDate":"2020-05-13","relievingDate":"","salaryAmount":"65000","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================

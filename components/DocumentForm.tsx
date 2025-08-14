@@ -322,7 +322,7 @@ export default function DocumentForm() {
     }
 
     if (query.length < 2) {
-      toast.error('Please enter at least 2 characters to search')
+      setEmployeeSuggestions([])
       return
     }
 
@@ -367,6 +367,21 @@ export default function DocumentForm() {
     } finally {
       setIsSearching(false)
     }
+  }
+
+  // Manual search function (for button click)
+  const handleManualSearch = async () => {
+    if (!employeeSearchQuery.trim()) {
+      toast.error('Please enter a search query')
+      return
+    }
+
+    if (employeeSearchQuery.length < 2) {
+      toast.error('Please enter at least 2 characters to search')
+      return
+    }
+
+    await searchEmployees(employeeSearchQuery)
   }
 
   // Auto-fill form with employee data
@@ -681,7 +696,7 @@ export default function DocumentForm() {
                       />
                     </div>
                     <button
-                      onClick={() => searchEmployees(employeeSearchQuery)}
+                      onClick={handleManualSearch}
                       disabled={isSearching}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
                     >

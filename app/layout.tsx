@@ -35,6 +35,23 @@ export default function RootLayout({
         <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Ensure page scrolls to top on load
+              if (typeof window !== 'undefined') {
+                window.addEventListener('load', function() {
+                  window.scrollTo(0, 0);
+                });
+                
+                // Also handle page reload
+                window.addEventListener('beforeunload', function() {
+                  window.scrollTo(0, 0);
+                });
+              }
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>
         {children}

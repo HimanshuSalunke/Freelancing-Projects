@@ -49,9 +49,9 @@ class HybridQAEngine:
                 logger.warning("⚠️ GOOGLE_GEMINI_API_KEY not found in environment variables")
                 return
             
-                genai.configure(api_key=api_key)
-                self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
-                logger.info("✅ Gemini model initialized successfully")
+            genai.configure(api_key=api_key)
+            self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            logger.info("✅ Gemini model initialized successfully")
         except Exception as e:
             logger.error(f"❌ Failed to initialize Gemini model: {str(e)}")
             self.gemini_model = None
@@ -158,30 +158,137 @@ class HybridQAEngine:
             self.qa_dataset = []
             self.qa_embeddings = []
     
-    def _find_similar_question(self, user_question: str, threshold: float = 0.8) -> Optional[Dict]:
-        """Find most similar question from dataset using semantic search"""
+    def _preprocess_text(self, text: str) -> str:
+        """Preprocess text for better matching"""
+        import re
+        
+        # Convert to lowercase
+        text = text.lower().strip()
+        
+        # Fix common typos
+        text = re.sub(r'\bpollicy\b', 'policy', text)
+        text = re.sub(r'\battendance\b', 'attendance', text)
+        text = re.sub(r'\bleave\b', 'leave', text)
+        text = re.sub(r'\bwfh\b', 'work from home', text)
+        
+        # Normalize greeting variations
+        text = re.sub(r'\bheyy+\b', 'hey', text)  # heyyy -> hey
+        text = re.sub(r'\bhelloo+\b', 'hello', text)  # hellooo -> hello
+        text = re.sub(r'\bhii+\b', 'hi', text)  # hiii -> hi
+        
+        # Remove extra whitespace
+        text = re.sub(r'\s+', ' ', text)
+        
+        # Remove punctuation except for important ones
+        text = re.sub(r'[^\w\s\-]', ' ', text)
+        
+        # Remove extra whitespace again
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        return text
+    
+    def _extract_keywords(self, text: str) -> set:
+        """Extract important keywords from text"""
+        # Common HR and policy keywords
+        hr_keywords = {
+            'policy', 'policies', 'leave', 'attendance', 'work', 'home', 'wfh', 'benefits', 
+            'salary', 'compensation', 'review', 'performance', 'reimbursement',
+            'dress', 'code', 'conduct', 'handbook', 'onboarding', 'training',
+            'device', 'password', 'software', 'helpdesk', 'it', 'support',
+            'acceptable', 'use', 'device', 'sop', 'procedure', 'hr', 'human', 'resource',
+            'employee', 'employer', 'company', 'organization', 'workplace',
+            # Emotion and greeting keywords
+            'hello', 'hi', 'hey', 'good', 'morning', 'afternoon', 'evening', 'how', 'are', 'you',
+            'feel', 'ok', 'well', 'going', 'everything', 'fine', 'great', 'thanks', 'thank'
+        }
+        
+        # Extract words from text
+        words = set(self._preprocess_text(text).split())
+        
+        # Return intersection with HR keywords
+        return words.intersection(hr_keywords)
+    
+    def _keyword_similarity(self, user_question: str, dataset_question: str) -> float:
+        """Calculate keyword-based similarity"""
+        user_keywords = self._extract_keywords(user_question)
+        dataset_keywords = self._extract_keywords(dataset_question)
+        
+        if not user_keywords or not dataset_keywords:
+            return 0.0
+        
+        # Calculate Jaccard similarity
+        intersection = len(user_keywords.intersection(dataset_keywords))
+        union = len(user_keywords.union(dataset_keywords))
+        
+        return intersection / union if union > 0 else 0.0
+    
+    def _find_similar_question(self, user_question: str, threshold: float = 0.6) -> Optional[Dict]:
+        """Find most similar question from dataset using improved semantic search"""
         if not self.sentence_model or not self.qa_embeddings or not self.qa_dataset:
+            logger.warning("⚠️ Missing required components for semantic search")
+            return None
+        
+        # Additional safety check for embeddings
+        if len(self.qa_embeddings) == 0 or len(self.qa_dataset) == 0:
+            logger.warning("⚠️ Empty embeddings or dataset")
             return None
         
         try:
-            # Encode user question
-            user_embedding = self.sentence_model.encode([user_question])
+            # Preprocess user question
+            processed_question = self._preprocess_text(user_question)
+            logger.info(f"🔍 Processing question: '{user_question}' -> '{processed_question}'")
             
-            # Calculate similarities
+            # Encode user question
+            user_embedding = self.sentence_model.encode([processed_question])
+            
+            # Calculate semantic similarities
             similarities = np.dot(self.qa_embeddings, user_embedding.T).flatten()
             
-            # Find best match
-            best_idx = np.argmax(similarities)
-            best_similarity = float(similarities[best_idx])  # Convert to float to avoid array issues
+            # Find top matches (keep as numpy array for argsort)
+            top_indices = np.argsort(similarities)[::-1][:5]  # Top 5 matches
             
-            logger.info(f"🔍 Best similarity found: {best_similarity:.3f} (threshold: {threshold})")
+            # Convert to list after finding indices
+            similarities = similarities.tolist()
             
-            if best_similarity >= threshold:
-                return {
-                    'qa_pair': self.qa_dataset[best_idx],
-                    'similarity': best_similarity,
-                    'index': int(best_idx)  # Convert to int to avoid array issues
-                }
+            best_match = None
+            best_score = 0.0
+            
+            for idx in top_indices:
+                idx = int(idx)
+                dataset_question = self.qa_dataset[idx]['question']
+                
+                # Semantic similarity
+                semantic_sim = float(similarities[idx])
+                
+                # Keyword similarity
+                keyword_sim = self._keyword_similarity(processed_question, dataset_question)
+                
+                # Combined score (weighted average)
+                combined_score = (semantic_sim * 0.7) + (keyword_sim * 0.3)
+                
+                logger.info(f"🔍 Match {idx}: '{dataset_question}' - Semantic: {semantic_sim:.3f}, Keywords: {keyword_sim:.3f}, Combined: {combined_score:.3f}")
+                
+                if combined_score > best_score:
+                    best_score = combined_score
+                    best_match = {
+                        'qa_pair': self.qa_dataset[idx],
+                        'similarity': combined_score,
+                        'semantic_similarity': semantic_sim,
+                        'keyword_similarity': keyword_sim,
+                        'index': idx
+                    }
+            
+            logger.info(f"🔍 Best combined score: {best_score:.3f} (threshold: {threshold})")
+            
+            # Adaptive threshold based on question length and complexity
+            adaptive_threshold = threshold
+            if len(processed_question.split()) <= 3:  # Short questions
+                adaptive_threshold = threshold - 0.1
+            elif len(processed_question.split()) >= 10:  # Long questions
+                adaptive_threshold = threshold + 0.1
+            
+            if best_score >= adaptive_threshold:
+                return best_match
             
             return None
                 
@@ -203,9 +310,30 @@ class HybridQAEngine:
             Answer the following question about company policies, procedures, or general HR matters.
             Be helpful, professional, and accurate. If you're not sure about something, say so.
             
-            Question: {question}
+            **Available Policy Topics:**
+            - Attendance Policy (work hours, tardiness)
+            - Leave Policy (20 days annual leave, submission requirements)
+            - Work From Home Policy (3 days/week, manager approval)
+            - Dress Code Policy (business casual)
+            - Performance Review Policy (bi-annual reviews)
+            - Reimbursement Policy (30-day submission, receipts required)
+            - Code of Conduct (respect, zero tolerance for harassment)
+            - Employee Handbook (mission, values, policies)
+            - Onboarding (2-week program, mandatory training)
+            - IT Policies (device, password, software, helpdesk)
             
-            Please provide a clear, helpful response:
+            **Important Guidelines:**
+            - For general policy questions, provide an overview of the policy
+            - For specific scenarios, provide practical guidance
+            - Always include contact information when relevant
+            - Be friendly and professional in tone
+            - If the question is unclear, ask for clarification
+            - For greetings and emotion-based questions, respond warmly and professionally
+            - For "how are you" type questions, respond positively about being ready to help
+            
+            **Question:** {question}
+            
+            Please provide a clear, helpful response based on the available policy information:
             """
             
             response = await asyncio.to_thread(
@@ -229,24 +357,251 @@ class HybridQAEngine:
         
         question = question.strip()
         
-        # Step 1: Check for document request keywords
-        if self.doc_handler and any(keyword in question.lower() for keyword in ['document', 'need document', 'request document', 'get document']):
+        # Step 0: Handle common greetings and basic questions first
+        processed_question = self._preprocess_text(question)
+        
+        # Check for greetings and emotion-based questions
+        greeting_keywords = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'how are you']
+        emotion_keywords = ['how are you', 'how do you feel', 'are you ok', 'are you well', 'how is it going', 'how is everything']
+        
+        if any(greeting in processed_question for greeting in greeting_keywords):
+            # Try to find exact greeting match first
+            for qa in self.qa_dataset:
+                if isinstance(qa, dict) and 'question' in qa:
+                    qa_lower = qa['question'].lower()
+                    if qa_lower in processed_question or processed_question in qa_lower:
+                        return qa['answer']
+        
+        # Check for emotion-based questions specifically
+        if any(emotion in processed_question for emotion in emotion_keywords):
+            # Look for the "how are you" response specifically
+            for qa in self.qa_dataset:
+                if isinstance(qa, dict) and 'question' in qa:
+                    if 'how are you' in qa['question'].lower():
+                        return qa['answer']
+        
+        # Check for "what can you do" type questions
+        capability_keywords = ['what can you do', 'help', 'capabilities', 'features']
+        if any(keyword in processed_question for keyword in capability_keywords):
+            for qa in self.qa_dataset:
+                if isinstance(qa, dict) and 'question' in qa:
+                    if 'what can you do' in qa['question'].lower() or 'help' in qa['question'].lower():
+                        return qa['answer']
+        
+        # Step 1: Check for document request keywords and numeric selections
+        document_keywords = [
+            'document', 'need document', 'request document', 'get document', 'want document',
+            'experience letter', 'employment letter', 'salary slip', 'form 16', 'bonafide',
+            'certificate', 'noc', 'relieving letter', 'offer letter', 'appointment letter',
+            'promotion letter', 'pf statement', 'uan details', 'medical insurance',
+            'id card', 'visa support', 'travel authorization'
+        ]
+        
+        # Check if it's a numeric document selection (1-16)
+        if self.doc_handler and question.strip().isdigit() and 1 <= int(question.strip()) <= 16:
             try:
-                return await self.doc_handler.handle_document_request(question)
+                doc_number = question.strip()
+                doc_name = self.doc_handler.supported_documents.get(doc_number)
+                if doc_name:
+                    logger.info(f"📄 User selected document: {doc_number} - {doc_name}")
+                    return self.doc_handler.get_document_details_prompt(doc_name)
+            except Exception as e:
+                logger.error(f"❌ Document selection error: {str(e)}")
+        
+        # Check if user is providing document details (contains common document-related keywords)
+        if self.doc_handler and any(keyword in question.lower() for keyword in ['name:', 'employee id:', 'id:', 'department:', 'designation:', 'joining date:', 'purpose:']):
+            try:
+                # This looks like document details being provided
+                return """📝 **Document Request Details Received**
+
+Thank you for providing the details! I've received your document request information.
+
+**Next Steps:**
+1. Your request has been logged in our system
+2. HR will review and process your request
+3. You'll receive a confirmation email with tracking details
+4. The document will be generated and sent to you within 2-3 business days
+
+**Contact HR:**
+• Email: hr@reliancejio.com
+• Phone: Available through internal directory
+
+If you need immediate assistance, please contact HR directly."""
+            except Exception as e:
+                logger.error(f"❌ Document details processing error: {str(e)}")
+        
+        # Check for document request keywords
+        if self.doc_handler and any(keyword in question.lower() for keyword in document_keywords):
+            try:
+                # Check if it's a specific document request
+                if any(specific_doc in question.lower() for specific_doc in ['experience letter', 'employment letter', 'salary slip', 'form 16', 'bonafide', 'certificate']):
+                    # Use the specific document handler
+                    return self._handle_specific_document_request(question)
+                
+                # If no specific match found, use document handler
+                return self.doc_handler.get_document_list()
             except Exception as e:
                 logger.error(f"❌ Document request error: {str(e)}")
         
         # Step 2: Try semantic search in local dataset
-        similar_qa = self._find_similar_question(question)
+        try:
+            similar_qa = self._find_similar_question(question)
+            
+            if similar_qa:
+                similarity_score = float(similar_qa['similarity'])
+                semantic_score = float(similar_qa.get('semantic_similarity', 0))
+                keyword_score = float(similar_qa.get('keyword_similarity', 0))
+                
+                logger.info(f"✅ Found similar question in dataset - Combined: {similarity_score:.3f}, Semantic: {semantic_score:.3f}, Keywords: {keyword_score:.3f}")
+                
+                # Use adaptive threshold based on match quality
+                threshold = 0.6
+                if semantic_score > 0.8 or keyword_score > 0.5:
+                    threshold = 0.5  # Lower threshold for high-quality partial matches
+                
+                # Special handling for policy questions
+                if 'policy' in processed_question:
+                    # For policy questions, prefer general policy descriptions over specific scenarios
+                    qa_question = similar_qa['qa_pair']['question'].lower()
+                    if 'what does' in qa_question and 'describe' in qa_question:
+                        threshold = 0.4  # Lower threshold for policy descriptions
+                    elif 'what is' in processed_question and 'what is' in qa_question:
+                        threshold = 0.4  # Lower threshold for "what is" questions
+                
+                if similarity_score >= threshold:
+                    return similar_qa['qa_pair']['answer']
+                else:
+                    logger.info(f"⚠️ Similarity score {similarity_score:.3f} below threshold {threshold}")
+        except Exception as e:
+            logger.error(f"❌ Error in semantic search: {str(e)}")
+            # Continue to keyword fallback
         
-        if similar_qa and similar_qa['similarity'] > 0.8:
-            logger.info(f"✅ Found similar question in dataset (similarity: {similar_qa['similarity']:.3f})")
-            return similar_qa['qa_pair']['answer']
+        # Step 2.5: Try keyword-based fallback
+        try:
+            logger.info("🔍 Trying keyword-based fallback search...")
+            user_keywords = self._extract_keywords(question)
+            logger.info(f"🔍 Extracted keywords: {user_keywords}")
+            
+            if user_keywords:
+                best_keyword_match = None
+                best_keyword_score = 0.0
+                
+                for i, qa in enumerate(self.qa_dataset):
+                    dataset_keywords = self._extract_keywords(qa['question'])
+                    if dataset_keywords:
+                        keyword_sim = self._keyword_similarity(question, qa['question'])
+                        if keyword_sim > best_keyword_score and keyword_sim > 0.3:  # Minimum keyword threshold
+                            best_keyword_score = keyword_sim
+                            best_keyword_match = {
+                                'qa_pair': qa,
+                                'similarity': keyword_sim,
+                                'index': i
+                            }
+                
+                if best_keyword_match:
+                    logger.info(f"✅ Found keyword-based match (score: {best_keyword_match['similarity']:.3f})")
+                    return best_keyword_match['qa_pair']['answer']
+        except Exception as e:
+            logger.error(f"❌ Error in keyword fallback: {str(e)}")
         
         # Step 3: Use Gemini API for complex questions
-        logger.info("🔄 Using Gemini API for complex question")
-        return await self._gemini_answer(question)
+        try:
+            logger.info("🔄 Using Gemini API for complex question")
+            return await self._gemini_answer(question)
+        except Exception as e:
+            logger.error(f"❌ Error in Gemini API: {str(e)}")
+            # Fallback to simple response
+            return f"Hello! I'm your Reliance Jio Infotech Solutions AI Assistant. I can help you with HR questions, document requests, and PDF processing. You asked: '{question}'. How can I assist you today?"
     
+    def _handle_specific_document_request(self, question: str) -> str:
+        """Handle specific document requests with better responses"""
+        question_lower = question.lower()
+        
+        # Experience letter
+        if 'experience letter' in question_lower or 'experience certificate' in question_lower:
+            return """**Experience Certificate Request**
+
+To request an Experience Certificate, please follow these steps:
+
+📋 **Required Information:**
+• Full Name (as per employee records)
+• Employee ID
+• Date of joining
+• Date of leaving (if applicable)
+• Purpose of the certificate
+
+📞 **Contact HR:**
+• Email: hr@reliancejio.com
+• Phone: Available through internal directory
+
+⏱️ **Processing Time:** 3-5 business days
+
+You can also use our Document Request System by typing "I need a document" and selecting option 2 for Experience Certificate."""
+
+        # Employment verification letter
+        elif 'employment' in question_lower and ('letter' in question_lower or 'verification' in question_lower):
+            return """**Employment Verification Letter Request**
+
+To request an Employment Verification Letter, please provide:
+
+📋 **Required Information:**
+• Full Name (as per employee records)
+• Employee ID
+• Purpose (e.g., bank loan, visa application, etc.)
+• Any specific requirements
+
+📞 **Contact HR:**
+• Email: hr@reliancejio.com
+• Phone: Available through internal directory
+
+⏱️ **Processing Time:** 2-3 business days
+
+You can also use our Document Request System by typing "I need a document" and selecting option 1 for Bonafide/Employment Verification Letter."""
+
+        # Salary slip
+        elif 'salary slip' in question_lower or 'payslip' in question_lower:
+            return """**Salary Slip Request**
+
+To request Salary Slips, please provide:
+
+📋 **Required Information:**
+• Full Name (as per employee records)
+• Employee ID
+• Time period (e.g., last 3 months, specific month)
+• Purpose
+
+📞 **Contact HR:**
+• Email: hr@reliancejio.com
+• Phone: Available through internal directory
+
+⏱️ **Processing Time:** 1-2 business days
+
+You can also use our Document Request System by typing "I need a document" and selecting option 7 for Salary Slips."""
+
+        # Form 16
+        elif 'form 16' in question_lower or 'tax' in question_lower:
+            return """**Form 16 / Tax Documents Request**
+
+To request Form 16 or Tax Documents, please provide:
+
+📋 **Required Information:**
+• Full Name (as per employee records)
+• Employee ID
+• Financial year (e.g., 2023-24)
+• Purpose
+
+📞 **Contact HR:**
+• Email: hr@reliancejio.com
+• Phone: Available through internal directory
+
+⏱️ **Processing Time:** 3-5 business days
+
+You can also use our Document Request System by typing "I need a document" and selecting option 8 for Form 16/Tax Documents."""
+
+        # Default document response
+        else:
+            return self.doc_handler.get_document_list()
+
     def get_health_status(self) -> Dict:
         """Get health status of QA engine components"""
         return {

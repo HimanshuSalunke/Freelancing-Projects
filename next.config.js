@@ -6,8 +6,24 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: 'http://localhost:8000/:path*',
+        source: '/api/chat/:path*',
+        destination: 'http://localhost:8000/chat/:path*',
+      },
+      {
+        source: '/api/documents/:path*',
+        destination: 'http://localhost:8000/documents/:path*',
+      },
+      {
+        source: '/api/certificates/:path*',
+        destination: 'http://localhost:8000/certificates/:path*',
+      },
+      {
+        source: '/api/gemini/:path*',
+        destination: 'http://localhost:8000/gemini/:path*',
+      },
+      {
+        source: '/api/advanced-qa/:path*',
+        destination: 'http://localhost:8000/advanced-qa/:path*',
       },
     ];
   },

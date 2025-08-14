@@ -87,7 +87,6 @@ class SummaryPDFGenerator:
             ["Document Type:", summary_data.get('document_type', 'Unknown')],
             ["Total Pages:", str(summary_data.get('total_pages', 'Unknown'))],
             ["Processing Time:", f"{summary_data.get('processing_time', 0):.2f} seconds"],
-            ["Model Used:", summary_data.get('model_used', 'Unknown')],
             ["Generated On:", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
         ]
         

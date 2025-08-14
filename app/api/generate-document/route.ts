@@ -84,6 +84,9 @@ export async function POST(request: NextRequest) {
       travelDate: formData.travelDate || ''
     }
 
+    console.log('Original formData:', formData)  // Debug log
+    console.log('Mapped details:', details)  // Debug log
+
     // Submit document request to backend
     const requestBody = {
       document_type: documentType,
@@ -93,6 +96,7 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('Sending request to backend:', requestBody)  // Debug log
+    console.log('Details JSON string:', JSON.stringify(details))  // Debug log
     
     let submitResponse: Response
     try {

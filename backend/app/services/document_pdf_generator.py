@@ -232,10 +232,10 @@ class DocumentPDFGenerator:
             import json
             details_dict = json.loads(details)
             
-            # Map required fields with defaults
+            # Map required fields with proper validation
             employee_info['full_name'] = details_dict.get('employeeName', 'Employee Name')
-            employee_info['employee_code'] = details_dict.get('employeeId', 'EMP001')
-            employee_info['employee_id'] = details_dict.get('employeeId', 'EMP001')
+            employee_info['employee_code'] = details_dict.get('employeeId', '')
+            employee_info['employee_id'] = details_dict.get('employeeId', '')
             employee_info['designation'] = details_dict.get('designation', 'Employee')
             employee_info['department'] = details_dict.get('department', 'General')
             employee_info['joining_date'] = details_dict.get('joiningDate', '')
@@ -275,7 +275,7 @@ class DocumentPDFGenerator:
             
             # Set defaults for missing fields
             if not employee_info.get('full_name'): employee_info['full_name'] = 'Employee Name'
-            if not employee_info.get('employee_id'): employee_info['employee_id'] = 'EMP001'
+            if not employee_info.get('employee_id'): employee_info['employee_id'] = ''
             if not employee_info.get('designation'): employee_info['designation'] = 'Employee'
             if not employee_info.get('department'): employee_info['department'] = 'General'
         
@@ -457,7 +457,7 @@ class DocumentPDFGenerator:
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-BON-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-BON-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -466,7 +466,7 @@ class DocumentPDFGenerator:
         
         # Employee details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -556,7 +556,7 @@ The information provided herein is true and accurate to the best of our knowledg
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
         relieving_date = employee_info.get('relieving_date', '')
         formatted_relieving_date = self._format_date(relieving_date)
-        ref_number = f"Reference No: RJI-EXP-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-EXP-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -565,7 +565,7 @@ The information provided herein is true and accurate to the best of our knowledg
         
         # Employee details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -678,7 +678,7 @@ This certificate is issued for official purposes and confirms the employment det
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-SAL-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-SAL-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -687,7 +687,7 @@ This certificate is issued for official purposes and confirms the employment det
         
         # Employee details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -784,7 +784,7 @@ The employee's salary is subject to applicable taxes and deductions as per the I
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-NOC-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-NOC-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -793,7 +793,7 @@ The employee's salary is subject to applicable taxes and deductions as per the I
         
         # Employee details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -889,7 +889,7 @@ This NOC is issued for official purposes and confirms that there are no pending 
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-VISA-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-VISA-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -898,7 +898,7 @@ This NOC is issued for official purposes and confirms that there are no pending 
         
         # Employee details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -994,7 +994,7 @@ This visa support letter is issued for official purposes and confirms the employ
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-OFF-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-OFF-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1003,7 +1003,7 @@ This visa support letter is issued for official purposes and confirms the employ
         
         # Employee details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -1117,7 +1117,7 @@ Please confirm your acceptance of this offer by signing and returning a copy of 
         # Reference Number
         appointment_date = employee_info.get('appointment_date', datetime.now().strftime('%Y-%m-%d'))
         formatted_date = self._format_date(appointment_date)
-        ref_number = f"Reference No: RJI-APT-{employee_info.get('employee_id', 'EMP')}-{appointment_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-APT-{employee_info.get('employee_id', '')}-{appointment_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1126,7 +1126,7 @@ Please confirm your acceptance of this offer by signing and returning a copy of 
         
         # Employee details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -1240,7 +1240,7 @@ We welcome you to the Reliance Jio Infotech Solutions family and look forward to
         # Reference Number
         promotion_date = employee_info.get('promotion_date', datetime.now().strftime('%Y-%m-%d'))
         formatted_date = self._format_date(promotion_date)
-        ref_number = f"Reference No: RJI-PR-{employee_info.get('employee_id', 'EMP')}-{promotion_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-PR-{employee_info.get('employee_id', '')}-{promotion_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1249,7 +1249,7 @@ We welcome you to the Reliance Jio Infotech Solutions family and look forward to
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -1368,7 +1368,7 @@ We congratulate you on this well-deserved promotion and look forward to your con
         # Reference Number
         relieving_date = employee_info.get('relieving_date', datetime.now().strftime('%Y-%m-%d'))
         formatted_date = self._format_date(relieving_date)
-        ref_number = f"Reference No: RJI-RL-{employee_info.get('employee_id', 'EMP')}-{relieving_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-RL-{employee_info.get('employee_id', '')}-{relieving_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1377,7 +1377,7 @@ We congratulate you on this well-deserved promotion and look forward to your con
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -1493,7 +1493,7 @@ We wish you success in your future endeavors and thank you for your contribution
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-SL-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-SL-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1502,7 +1502,7 @@ We wish you success in your future endeavors and thank you for your contribution
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -1624,7 +1624,7 @@ This is to certify that you have been paid a salary of <b>₹{salary_amount}</b>
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-F16-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-F16-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1633,7 +1633,7 @@ This is to certify that you have been paid a salary of <b>₹{salary_amount}</b>
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -1751,7 +1751,7 @@ This is to certify that you have been issued Form 16 for the assessment year <b>
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-PF-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-PF-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1760,7 +1760,7 @@ This is to certify that you have been issued Form 16 for the assessment year <b>
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -1876,7 +1876,7 @@ This is to certify that you have been issued a Provident Fund (PF) Statement for
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-NDA-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-NDA-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1885,7 +1885,7 @@ This is to certify that you have been issued a Provident Fund (PF) Statement for
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -2001,7 +2001,7 @@ This is to certify that you have been issued a Non-Disclosure Agreement (NDA) co
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-ID-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-ID-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -2010,7 +2010,7 @@ This is to certify that you have been issued a Non-Disclosure Agreement (NDA) co
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -2127,7 +2127,7 @@ This is to confirm that your request for ID card replacement has been received a
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-MED-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-MED-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -2136,7 +2136,7 @@ This is to confirm that your request for ID card replacement has been received a
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
@@ -2253,7 +2253,7 @@ This is to certify that you have been issued a Medical Insurance Card copy from 
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-TRAVEL-{employee_info.get('employee_id', 'EMP')}-{current_issue_date.replace('-', '')}"
+        ref_number = f"Reference No: RJI-TRAVEL-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -2262,7 +2262,7 @@ This is to certify that you have been issued a Medical Insurance Card copy from 
         
         # Employee Details
         employee_name = employee_info.get('full_name', '')
-        employee_id = employee_info.get('employee_id', '')
+        employee_id = employee_info.get('employee_id', '')  # Use actual employee ID from form
         designation = employee_info.get('designation', '')
         department = employee_info.get('department', '')
         joining_date = self._format_date(employee_info.get('joining_date', ''))
