@@ -9,21 +9,6 @@
 .env.production.local
 .env.*.local
 
-# AI Models (VERY LARGE - 100MB+ each)
-models/
-*.bin
-*.safetensors
-*.onnx
-*.pt
-*.pth
-*.ckpt
-*.h5
-*.hdf5
-*.pb
-*.tflite
-*.mlmodel
-*.mar
-*.model
 
 # ===========================================
 # DEPENDENCIES
