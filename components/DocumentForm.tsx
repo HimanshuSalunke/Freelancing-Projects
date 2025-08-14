@@ -384,6 +384,25 @@ export default function DocumentForm() {
     await searchEmployees(employeeSearchQuery)
   }
 
+  // Convert date from DD-MM-YYYY to YYYY-MM-DD format for HTML date input
+  const convertDateFormat = (dateString: string): string => {
+    if (!dateString) return ''
+    
+    // Check if date is already in YYYY-MM-DD format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return dateString
+    }
+    
+    // Convert from DD-MM-YYYY to YYYY-MM-DD
+    if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
+      const [day, month, year] = dateString.split('-')
+      return `${year}-${month}-${day}`
+    }
+    
+    // If format is unknown, return as is
+    return dateString
+  }
+
   // Auto-fill form with employee data
   const fillFormWithEmployee = (employee: Employee) => {
     const newFormData = {
@@ -391,7 +410,7 @@ export default function DocumentForm() {
       employeeId: employee.employee_code,
       designation: employee.designation,
       department: employee.department,
-      joiningDate: employee.joining_date,
+      joiningDate: convertDateFormat(employee.joining_date),
       issueDate: new Date().toISOString().split('T')[0], // Today's date
     }
 

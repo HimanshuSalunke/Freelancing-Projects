@@ -979,3 +979,12 @@ User: anonymous
 Details: {"employeeName":"Edward Nichols","employeeId":"EMP0185","designation":"Sales Manager","department":"Sales","joiningDate":"2018-10-28","relievingDate":"2025-08-14","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
 Status: completed
 =====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-15 00:07:08
+Request ID: DOC_20250815_000708
+Document: Experience Certificate
+User: anonymous
+Details: {"employeeName":"Johnathan Farley","employeeId":"EMP0015","designation":"Software Engineer","department":"Sales","joiningDate":"2024-06-13","relievingDate":"2025-08-15","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================

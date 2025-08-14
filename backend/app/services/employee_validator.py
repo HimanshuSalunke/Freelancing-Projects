@@ -127,9 +127,21 @@ class EmployeeValidator:
             # Check joining date (exact match)
             if joining_date:
                 try:
-                    # Parse and compare dates
+                    # Parse provided date (expecting YYYY-MM-DD format from frontend)
                     provided_date = datetime.strptime(joining_date, '%Y-%m-%d').date()
-                    expected_date = datetime.strptime(matched_emp.get('joining_date', ''), '%Y-%m-%d').date()
+                    
+                    # Parse expected date (from database, could be DD-MM-YYYY or YYYY-MM-DD)
+                    expected_date_str = matched_emp.get('joining_date', '')
+                    try:
+                        # Try YYYY-MM-DD format first
+                        expected_date = datetime.strptime(expected_date_str, '%Y-%m-%d').date()
+                    except ValueError:
+                        try:
+                            # Try DD-MM-YYYY format (database format)
+                            expected_date = datetime.strptime(expected_date_str, '%d-%m-%Y').date()
+                        except ValueError:
+                            validation_result['errors'].append(f"Invalid expected date format in database: {expected_date_str}")
+                            return validation_result
                     
                     if provided_date != expected_date:
                         validation_result['errors'].append(f"Joining date mismatch. Expected: {matched_emp.get('joining_date')}, Provided: {joining_date}")
@@ -139,6 +151,7 @@ class EmployeeValidator:
             # Check if employee is still active (not a future joining date)
             if joining_date:
                 try:
+                    # Parse provided date (expecting YYYY-MM-DD format from frontend)
                     joining_date_obj = datetime.strptime(joining_date, '%Y-%m-%d').date()
                     current_date = datetime.now().date()
                     
