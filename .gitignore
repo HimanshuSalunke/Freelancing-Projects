@@ -1,7 +1,7 @@
 # ===========================================
 # CRITICAL EXCLUSIONS (DO NOT REMOVE)
 # ===========================================
-# Environment variables (contains sensitive API keys)
+# Environment variables (EXCLUDE for security - set in Vercel dashboard)
 .env
 .env.local
 .env.development.local
