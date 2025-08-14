@@ -48,16 +48,7 @@ export default function Header() {
             </div>
           </motion.div>
 
-          {/* Features Badge */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="hidden md:flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full border border-green-200"
-          >
-            <Shield className="w-4 h-4" />
-            <span className="text-sm font-medium">ISO 27001 Certified</span>
-          </motion.div>
+
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">

@@ -333,7 +333,7 @@ class DocumentPDFGenerator:
         story.append(Paragraph("📍 Registered Office: Maker Chambers IV, Nariman Point, Mumbai - 400021", self.company_subtitle_style))
         story.append(Paragraph("📋 CIN: L17110MH2007PLC169642 | GST: 27AABCR0000A1Z5", self.company_subtitle_style))
         story.append(Paragraph("📞 Phone: +91-22-3555-5000 | 📧 Email: hr@reliancejio.com", self.company_subtitle_style))
-        story.append(Paragraph("🌐 Website: www.reliancejio.com | 🔒 ISO 27001 Certified", self.company_subtitle_style))
+        story.append(Paragraph("🌐 Website: www.reliancejio.com", self.company_subtitle_style))
         story.append(Spacer(1, 15))
 
     def _add_enhanced_footer(self, story: List):

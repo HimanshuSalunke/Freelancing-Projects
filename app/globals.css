@@ -141,6 +141,14 @@ body {
     @apply bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105 hover:border-blue-300 hover:bg-blue-50/30;
   }
   
+  .card-clickable:hover {
+    @apply transform -translate-y-1 shadow-2xl;
+  }
+  
+  .card-clickable:active {
+    @apply transform scale-95;
+  }
+  
   .input-field {
     @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
   }

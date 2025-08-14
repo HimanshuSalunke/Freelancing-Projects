@@ -408,7 +408,7 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
     story.append(Paragraph("📍 Registered Office: Maker Chambers IV, Nariman Point, Mumbai - 400021", company_details_style))
     story.append(Paragraph("📋 CIN: L17110MH2007PLC169642 | GST: 27AABCR0000A1Z5", company_details_style))
     story.append(Paragraph("📞 Phone: +91-22-3555-5000 | 📧 Email: hr@reliancejio.com", company_details_style))
-    story.append(Paragraph("🌐 Website: www.reliancejio.com | 🔒 ISO 27001 Certified", company_details_style))
+    story.append(Paragraph("🌐 Website: www.reliancejio.com", company_details_style))
     story.append(Spacer(1, 15))
     
     # Certificate Badge and Title with enhanced styling
@@ -536,7 +536,7 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
     • Certificate validity: 6 months from date of issue<br/>
     • This document is confidential and should be handled with care<br/>
     • For any queries, call: +91-22-3555-5000<br/>
-    • 🔐 ISO 27001 Certified | 🔒 Blockchain Verified | 📱 QR Code: Scan for verification
+    • 🔒 Blockchain Verified | 📱 QR Code: Scan for verification
     """
     story.append(Paragraph(footer_text, footer_style))
     

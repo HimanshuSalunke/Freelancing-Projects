@@ -6,6 +6,7 @@ import { MessageCircle, FileText, FileCheck } from 'lucide-react'
 interface ModeSelectorProps {
   currentMode: 'chat' | 'pdf' | 'documents'
   onModeChange: (mode: 'chat' | 'pdf' | 'documents') => void
+  onModeChangeWithScroll?: (mode: 'chat' | 'pdf' | 'documents') => void
 }
 
 const modes = [
@@ -32,7 +33,7 @@ const modes = [
   }
 ]
 
-export default function ModeSelector({ currentMode, onModeChange }: ModeSelectorProps) {
+export default function ModeSelector({ currentMode, onModeChange, onModeChangeWithScroll }: ModeSelectorProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 justify-center" data-mode-selector>
       {modes.map((mode) => {
@@ -42,7 +43,12 @@ export default function ModeSelector({ currentMode, onModeChange }: ModeSelector
         return (
           <motion.button
             key={mode.id}
-            onClick={() => onModeChange(mode.id)}
+            onClick={() => {
+              onModeChange(mode.id)
+              if (onModeChangeWithScroll) {
+                onModeChangeWithScroll(mode.id)
+              }
+            }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`

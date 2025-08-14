@@ -1,14 +1,18 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot } from 'lucide-react'
+import { Send, Bot, FileCheck, Upload, X } from 'lucide-react'
 import { Message } from '@/lib/types'
+import DocumentForm from './DocumentForm'
+import PDFUploader from './PDFUploader'
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [showDocumentForm, setShowDocumentForm] = useState(false)
+  const [showPDFUploader, setShowPDFUploader] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -20,7 +24,7 @@ export default function ChatInterface() {
       {
         id: '1',
         type: 'assistant',
-        content: 'I\'m ready to help you with HR questions! 💬\n\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (type "I need a document")\n• Powered by semantic search and AI assistance\n• Quick and accurate responses to your queries\n\nJust type your question and I\'ll help you find the information you need!',
+        content: 'I\'m ready to help you with HR questions! 💬\n\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (type "I need a document")\n• Upload PDFs for summarization (type "summarize PDF")\n• Powered by semantic search and AI assistance\n• Quick and accurate responses to your queries\n\nJust type your question and I\'ll help you find the information you need!',
         timestamp: new Date()
       }
     ])
@@ -41,9 +45,7 @@ export default function ChatInterface() {
         scrollToBottom()
       })
     }
-  }, [messages, isLoading])
-
-
+  }, [messages, isLoading, showDocumentForm, showPDFUploader])
 
   // Focus input after message is sent
   useEffect(() => {
@@ -51,6 +53,35 @@ export default function ChatInterface() {
       inputRef.current.focus()
     }
   }, [isLoading])
+
+  // Check for document or PDF requests
+  const checkForFormTriggers = (message: string) => {
+    const lowerMessage = message.toLowerCase()
+    
+    // Document request triggers
+    const documentTriggers = [
+      'i need a document', 'request document', 'get document', 'want document',
+      'document request', 'generate document', 'create document', 'certificate',
+      'experience letter', 'employment letter', 'salary slip', 'form 16',
+      'bonafide', 'noc', 'relieving letter', 'offer letter', 'appointment letter'
+    ]
+    
+    // PDF summarization triggers
+    const pdfTriggers = [
+      'summarize pdf', 'upload pdf', 'pdf summarization', 'summarize document',
+      'pdf processing', 'document summarization', 'upload document'
+    ]
+    
+    if (documentTriggers.some(trigger => lowerMessage.includes(trigger))) {
+      return 'document'
+    }
+    
+    if (pdfTriggers.some(trigger => lowerMessage.includes(trigger))) {
+      return 'pdf'
+    }
+    
+    return null
+  }
 
   // Simple message sending - exactly like HTML version's handleQAMessage
   const handleSendMessage = async () => {
@@ -66,6 +97,25 @@ export default function ChatInterface() {
     setMessages(prev => [...prev, userMessage])
     setInputMessage('')
     setIsLoading(true)
+
+    // Check for form triggers
+    const formType = checkForFormTriggers(inputMessage.trim())
+    
+    if (formType === 'document') {
+      setShowDocumentForm(true)
+      setShowPDFUploader(false)
+      addMessage('assistant', '📝 I\'ll help you request a document! Please fill out the form below to generate your document.')
+      setIsLoading(false)
+      return
+    }
+    
+    if (formType === 'pdf') {
+      setShowPDFUploader(true)
+      setShowDocumentForm(false)
+      addMessage('assistant', '📄 I\'ll help you summarize your PDF! Please upload your document below.')
+      setIsLoading(false)
+      return
+    }
 
     try {
       // Simple fetch to /chat API - exactly like HTML version
@@ -129,6 +179,11 @@ export default function ChatInterface() {
     }
   }
 
+  const closeForms = () => {
+    setShowDocumentForm(false)
+    setShowPDFUploader(false)
+  }
+
   // Don't render until client-side hydration is complete
   if (!isClient) {
     return (
@@ -180,6 +235,52 @@ export default function ChatInterface() {
             </div>
           ))}
           
+          {/* Inline Document Form */}
+          {showDocumentForm && (
+            <div className="flex justify-start">
+              <div className="max-w-4xl w-full bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <FileCheck className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold text-gray-900">Document Request Form</span>
+                  </div>
+                  <button
+                    onClick={closeForms}
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  <DocumentForm />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Inline PDF Uploader */}
+          {showPDFUploader && (
+            <div className="flex justify-start">
+              <div className="max-w-4xl w-full bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Upload className="w-5 h-5 text-purple-600" />
+                    <span className="font-semibold text-gray-900">PDF Summarization</span>
+                  </div>
+                  <button
+                    onClick={closeForms}
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  <PDFUploader />
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Typing indicator - same as HTML version */}
           {isLoading && (
             <div className="flex justify-start">
@@ -206,7 +307,7 @@ export default function ChatInterface() {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your question here..."
+              placeholder="Type your question here... (try 'I need a document' or 'summarize PDF')"
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={isLoading}
             />

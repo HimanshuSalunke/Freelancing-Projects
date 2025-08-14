@@ -970,3 +970,12 @@ User: anonymous
 Details: {"employeeName":"Richard Johnson","employeeId":"EMP0136","designation":"Finance Executive","department":"Engineering","joiningDate":"2020-05-13","relievingDate":"","salaryAmount":"65000","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
 Status: completed
 =====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-14 21:44:53
+Request ID: DOC_20250814_214453
+Document: Experience Certificate
+User: anonymous
+Details: {"employeeName":"Edward Nichols","employeeId":"EMP0185","designation":"Sales Manager","department":"Sales","joiningDate":"2018-10-28","relievingDate":"2025-08-14","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================

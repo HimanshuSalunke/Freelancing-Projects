@@ -33,6 +33,7 @@ export default function Home() {
   const [showFeatures, setShowFeatures] = useState(false)
   const [isClient, setIsClient] = useState(false)
   const mainContainerRef = useRef<HTMLDivElement>(null)
+  const interfaceSectionRef = useRef<HTMLDivElement>(null)
 
   // Handle hydration and ensure page starts at top
   useEffect(() => {
@@ -42,15 +43,24 @@ export default function Home() {
     window.scrollTo(0, 0)
   }, [])
 
-  // Smooth scroll to top when switching modes
+  // Handle scrolling when mode changes (triggered by feature card clicks)
+  const [shouldScrollToInterface, setShouldScrollToInterface] = useState(false)
+  
   useEffect(() => {
-    if (mainContainerRef.current) {
-      mainContainerRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      })
+    if (shouldScrollToInterface) {
+      setTimeout(() => {
+        if (interfaceSectionRef.current) {
+          interfaceSectionRef.current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          })
+        }
+        setShouldScrollToInterface(false)
+      }, 100)
     }
-  }, [currentMode])
+  }, [currentMode, shouldScrollToInterface])
+
+
 
   // Handle feature card clicks
   const handleFeatureClick = (featureTitle: string) => {
@@ -65,19 +75,11 @@ export default function Home() {
       targetMode = 'documents'
     }
     
-    // Set the mode and scroll to the interface
-    setCurrentMode(targetMode)
+    console.log('Feature clicked:', featureTitle, 'Target mode:', targetMode)
     
-    // Scroll to the interface section with a small delay to ensure mode change is complete
-    setTimeout(() => {
-      const modeSelector = document.querySelector('[data-mode-selector]')
-      if (modeSelector) {
-        modeSelector.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        })
-      }
-    }, 150)
+    // Set the mode and trigger scroll
+    setCurrentMode(targetMode)
+    setShouldScrollToInterface(true)
   }
 
   const features = [
@@ -99,7 +101,7 @@ export default function Home() {
     {
       icon: <Shield className="w-6 h-6" />,
       title: "Enhanced Security",
-      description: "ISO 27001 certified security features with digital signatures and verification elements"
+      description: "Digital signatures and verification elements"
     },
     {
       icon: <Zap className="w-6 h-6" />,
@@ -216,7 +218,14 @@ export default function Home() {
         </motion.div>
 
         {/* Mode Selector */}
-        <ModeSelector currentMode={currentMode} onModeChange={setCurrentMode} />
+        <ModeSelector 
+          currentMode={currentMode} 
+          onModeChange={setCurrentMode}
+          onModeChangeWithScroll={(mode) => {
+            setCurrentMode(mode)
+            setShouldScrollToInterface(true)
+          }}
+        />
 
         {/* Main Interface */}
         <ErrorBoundary>
@@ -226,6 +235,7 @@ export default function Home() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="mt-8"
+            ref={interfaceSectionRef}
           >
             {currentMode === 'chat' && <ChatInterface />}
             {currentMode === 'pdf' && <PDFUploader />}
