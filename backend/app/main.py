@@ -20,12 +20,9 @@ from .routers import chat, documents, certificates, health, gemini_documents, ad
 
 app = FastAPI(title="Org AI Chatbot", version="0.1.0")
 
-# Get allowed origins from environment or use defaults
-allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,https://localhost:3000").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
