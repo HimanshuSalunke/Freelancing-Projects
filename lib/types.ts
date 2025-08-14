@@ -4,6 +4,17 @@ export interface Message {
   type: 'user' | 'assistant'
   content: string
   timestamp: Date
+  edited?: boolean
+  editedAt?: Date
+}
+
+export interface ChatSession {
+  id: string
+  title: string
+  messages: Message[]
+  createdAt: Date
+  updatedAt: Date
+  isActive?: boolean
 }
 
 // Employee Types
