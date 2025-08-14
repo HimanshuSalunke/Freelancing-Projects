@@ -34,7 +34,7 @@ const modes = [
 
 export default function ModeSelector({ currentMode, onModeChange }: ModeSelectorProps) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+    <div className="flex flex-col sm:flex-row gap-4 justify-center" data-mode-selector>
       {modes.map((mode) => {
         const Icon = mode.icon
         const isActive = currentMode === mode.id

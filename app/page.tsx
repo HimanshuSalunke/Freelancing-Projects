@@ -40,50 +40,45 @@ export default function Home() {
     
     // Ensure page scrolls to top on load/reload
     window.scrollTo(0, 0)
-    
-    // Also handle browser back/forward navigation
-    const handleBeforeUnload = () => {
-      window.scrollTo(0, 0)
-    }
-    
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
 
-  // Prevent main page scroll when interacting with components
-  useEffect(() => {
-    const preventScroll = (e: WheelEvent) => {
-      const target = e.target as HTMLElement
-      const isInScrollableContainer = target.closest('.overflow-y-auto') || 
-                                    target.closest('.h-96') ||
-                                    target.closest('[data-scrollable="true"]')
-      
-      if (isInScrollableContainer) {
-        // Allow scrolling within the container
-        return
-      }
-      
-      // For other interactions, prevent unexpected scroll jumps
-      if (e.deltaY !== 0) {
-        // Allow normal scrolling
-        return
-      }
-    }
-
-    document.addEventListener('wheel', preventScroll, { passive: true })
-    return () => document.removeEventListener('wheel', preventScroll)
-  }, [])
-
-  // Restore scroll position when switching modes
+  // Smooth scroll to top when switching modes
   useEffect(() => {
     if (mainContainerRef.current) {
-      // Smooth scroll to top when switching modes
       mainContainerRef.current.scrollIntoView({ 
         behavior: 'smooth', 
         block: 'start' 
       })
     }
   }, [currentMode])
+
+  // Handle feature card clicks
+  const handleFeatureClick = (featureTitle: string) => {
+    let targetMode: 'chat' | 'pdf' | 'documents' = 'chat'
+    
+    // Map feature titles to modes
+    if (featureTitle.includes('Q&A') || featureTitle.includes('Chat')) {
+      targetMode = 'chat'
+    } else if (featureTitle.includes('PDF') || featureTitle.includes('Summarization')) {
+      targetMode = 'pdf'
+    } else if (featureTitle.includes('Document') || featureTitle.includes('Request')) {
+      targetMode = 'documents'
+    }
+    
+    // Set the mode and scroll to the interface
+    setCurrentMode(targetMode)
+    
+    // Scroll to the interface section with a small delay to ensure mode change is complete
+    setTimeout(() => {
+      const modeSelector = document.querySelector('[data-mode-selector]')
+      if (modeSelector) {
+        modeSelector.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        })
+      }
+    }, 150)
+  }
 
   const features = [
     {
@@ -183,23 +178,38 @@ export default function Home() {
                 exit={{ opacity: 0, height: 0 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
               >
-                {features.map((feature, index) => (
-                  <motion.div
-                    key={feature.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="card hover:scale-105 transition-transform duration-300"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-                        {feature.icon}
+                {features.map((feature, index) => {
+                  // Determine if this feature is currently active
+                  const isActive = 
+                    (feature.title.includes('Q&A') || feature.title.includes('Chat')) && currentMode === 'chat' ||
+                    (feature.title.includes('PDF') || feature.title.includes('Summarization')) && currentMode === 'pdf' ||
+                    (feature.title.includes('Document') || feature.title.includes('Request')) && currentMode === 'documents'
+                  
+                  return (
+                    <motion.div
+                      key={feature.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={cn(
+                        "card-clickable",
+                        isActive && "ring-2 ring-blue-500 bg-blue-50/50 border-blue-300"
+                      )}
+                      onClick={() => handleFeatureClick(feature.title)}
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={cn(
+                          "p-2 rounded-lg",
+                          isActive ? "bg-blue-200 text-blue-700" : "bg-blue-100 text-blue-600"
+                        )}>
+                          {feature.icon}
+                        </div>
+                        <h3 className="font-semibold text-gray-900">{feature.title}</h3>
                       </div>
-                      <h3 className="font-semibold text-gray-900">{feature.title}</h3>
-                    </div>
-                    <p className="text-gray-600 text-sm">{feature.description}</p>
-                  </motion.div>
-                ))}
+                      <p className="text-gray-600 text-sm">{feature.description}</p>
+                    </motion.div>
+                  )
+                })}
               </motion.div>
             )}
           </AnimatePresence>

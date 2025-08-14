@@ -1,6 +1,8 @@
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -19,8 +21,8 @@
 }
 
 html {
-  /* Use auto scroll behavior to prevent unwanted scrolling */
-  scroll-behavior: auto;
+  /* Use smooth scroll behavior for better UX */
+  scroll-behavior: smooth;
 }
 
 body {
@@ -32,22 +34,26 @@ body {
     )
     rgb(var(--background-start-rgb));
   font-family: 'Inter', sans-serif;
-  /* Prevent scroll jumps */
+  /* Prevent horizontal scroll */
   overflow-x: hidden;
+  /* Ensure proper scroll behavior */
+  scroll-behavior: smooth;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 3px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -61,6 +67,11 @@ body {
 
 /* Smooth scrolling for containers */
 [data-scrollable="true"] {
+  scroll-behavior: smooth;
+}
+
+/* Ensure proper scroll behavior for chat containers */
+.overflow-y-auto {
   scroll-behavior: smooth;
 }
 
@@ -124,6 +135,10 @@ body {
   
   .card {
     @apply bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300;
+  }
+  
+  .card-clickable {
+    @apply bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105 hover:border-blue-300 hover:bg-blue-50/30;
   }
   
   .input-field {

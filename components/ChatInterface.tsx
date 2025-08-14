@@ -9,7 +9,7 @@ export default function ChatInterface() {
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isClient, setIsClient] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Handle hydration
@@ -28,13 +28,22 @@ export default function ChatInterface() {
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
-    if (messagesEndRef.current) {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
+    if (messagesContainerRef.current) {
+      const scrollToBottom = () => {
+        const container = messagesContainerRef.current
+        if (container) {
+          container.scrollTop = container.scrollHeight
+        }
+      }
+      
+      // Use requestAnimationFrame to ensure DOM is updated
+      requestAnimationFrame(() => {
+        scrollToBottom()
+      })
     }
-  }, [messages])
+  }, [messages, isLoading])
+
+
 
   // Focus input after message is sent
   useEffect(() => {
@@ -148,8 +157,12 @@ export default function ChatInterface() {
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="h-96 overflow-y-auto p-4 space-y-4" ref={messagesEndRef}>
+        {/* Messages Container - Fixed height with proper scrolling */}
+        <div 
+          ref={messagesContainerRef}
+          className="h-[500px] md:h-[600px] overflow-y-auto overflow-x-hidden p-4 space-y-4 scroll-smooth"
+          data-scrollable="true"
+        >
           {messages.map((message) => (
             <div
               key={message.id}
