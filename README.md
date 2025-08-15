@@ -7,46 +7,48 @@ An advanced AI-powered HR assistant chatbot built as a college major project by 
 ## ✨ Key Features
 
 ### 🤖 **HR Q&A Chat System**
-- **Semantic Search**: Advanced question-answering using hybrid AI approach
-- **Policy Knowledge**: Comprehensive coverage of company policies, benefits, and procedures
+- **Hybrid AI Approach**: Combines semantic search with Google Gemini 2.0 Flash Exp
+- **Local Embeddings**: Fast policy lookups using Sentence Transformers
+- **Comprehensive Knowledge Base**: 500+ curated Q&A pairs covering company policies
 - **Real-time Responses**: Instant answers with context-aware AI assistance
 - **Multi-language Support**: Handles various English proficiency levels
 
-### 📄 **PDF Document Processing**
+### 📄 **Advanced PDF Document Processing**
 - **Large File Support**: Handles PDFs up to 50MB with 30+ pages
-- **Table Extraction**: Intelligent extraction and formatting of table data
-- **Advanced Summarization**: AI-powered comprehensive document summaries
+- **Intelligent Table Extraction**: Advanced table detection and formatting
+- **AI-Powered Summarization**: Comprehensive document summaries using Gemini 2.0
 - **Progress Tracking**: Real-time processing status with intelligent chunking
-- **Multiple Formats**: Supports complex documents with mixed content types
+- **Multiple Content Types**: Supports complex documents with mixed content
 
-### 📜 **Document Request System**
+### 📜 **Document Generation System**
 - **16 Document Types**: Complete range of official HR documents
-- **Step-by-step Flow**: Guided process for document requests
+- **Professional Templates**: Company-branded certificates and letters
 - **Employee Validation**: Automatic verification against company records
-- **Form-based Interface**: User-friendly data collection
-- **HR Notifications**: Automatic alerts to HR department
+- **Digital Signatures**: Enhanced security with verification elements
+- **PDF Generation**: High-quality document output with ReportLab
 
 ### 🔐 **Security & Authentication**
-- **OTP-based Login**: Secure email-based authentication
+- **OTP-based Login**: Secure email-based authentication system
 - **Session Management**: Robust session handling with automatic logout
 - **Input Validation**: Comprehensive security measures
-- **Bad Language Filter**: Content moderation system
+- **Content Filtering**: Bad language detection and moderation
+- **Middleware Protection**: Route-level authentication enforcement
 
 ## 🏗️ Architecture
 
 ### Frontend (Next.js 14)
-- **Framework**: Next.js 14 with React 18
+- **Framework**: Next.js 14 with React 18 and TypeScript
 - **Styling**: Tailwind CSS with custom design system
 - **Animations**: Framer Motion for smooth interactions
 - **State Management**: React hooks with context
-- **TypeScript**: Full type safety throughout the application
+- **Authentication**: Middleware-based route protection
 
 ### Backend (FastAPI)
 - **Framework**: FastAPI with Python 3.8+
 - **AI Integration**: Google Gemini 2.0 Flash Exp
 - **Semantic Search**: Sentence Transformers with local embeddings
-- **Document Processing**: PyMuPDF, PDFPlumber, OpenCV
-- **Database**: MongoDB Atlas (cloud) or local JSON files
+- **Document Processing**: PyMuPDF, PDFPlumber, OpenCV, ReportLab
+- **Database**: MongoDB Atlas (cloud) with local JSON fallbacks
 
 ### AI & ML Components
 - **Hybrid QA Engine**: Combines semantic search with generative AI
@@ -65,7 +67,9 @@ An advanced AI-powered HR assistant chatbot built as a college major project by 
   "tailwindcss": "3.4.10",
   "framer-motion": "11.2.14",
   "lucide-react": "0.365.0",
-  "react-hot-toast": "2.5.1"
+  "react-hot-toast": "2.5.1",
+  "axios": "^1.7.4",
+  "react-dropzone": "^14.3.4"
 }
 ```
 
@@ -74,25 +78,31 @@ An advanced AI-powered HR assistant chatbot built as a college major project by 
 # Core Framework
 fastapi>=0.110,<1.0
 uvicorn[standard]>=0.22,<1.0
+python-dotenv>=1.0.0,<2.0
 
 # AI & ML
 google-generativeai>=0.8.0,<1.0
 sentence-transformers>=2.2.2,<3.0
 torch>=2.2,<3.0
+transformers>=4.41,<5.0
 
 # Document Processing
 pymupdf>=1.23,<2.0
 pdfplumber>=0.11,<1.0
 opencv-python>=4.8,<5.0
 pandas>=2.2,<3.0
+reportlab>=4.0,<5.0
+python-docx>=1.1,<2.0
 
 # Security & Auth
 PyJWT>=2.8,<3.0
 passlib[bcrypt]>=1.7,<2.0
+email-validator>=2.1,<3.0
 
-# MongoDB Database
+# Database
 motor>=3.3.0,<4.0
 pymongo>=4.6.0,<5.0
+```
 
 ## 📁 Project Structure
 
@@ -101,31 +111,89 @@ chatbot_project/
 ├── app/                          # Next.js frontend
 │   ├── api/                      # API routes
 │   │   ├── auth/                 # Authentication endpoints
+│   │   │   ├── send-otp/         # OTP sending
+│   │   │   ├── verify-otp/       # OTP verification
+│   │   │   ├── me/               # User info
+│   │   │   └── logout/           # Logout
 │   │   ├── chat/                 # Chat functionality
-│   │   ├── documents/            # Document processing
-│   │   └── ...
+│   │   ├── upload-pdf/           # PDF upload
+│   │   ├── process-pdf/          # PDF processing
+│   │   ├── download-summary-pdf/ # Summary download
+│   │   ├── employee-search/      # Employee search
+│   │   ├── employee-validate/    # Employee validation
+│   │   ├── generate-document/    # Document generation
+│   │   └── health/               # Health checks
 │   ├── login/                    # Login page
 │   ├── page.tsx                  # Main application
-│   └── layout.tsx                # Root layout
+│   ├── layout.tsx                # Root layout
+│   └── globals.css               # Global styles
 ├── backend/                      # FastAPI backend
 │   ├── app/
 │   │   ├── routers/              # API route handlers
+│   │   │   ├── auth.py           # Authentication
+│   │   │   ├── chat.py           # Chat functionality
+│   │   │   ├── advanced_qa.py    # Advanced Q&A
+│   │   │   ├── documents.py      # Document processing
+│   │   │   ├── gemini_documents.py # PDF summarization
+│   │   │   ├── certificates.py   # Certificate generation
+│   │   │   ├── document_requests.py # Document requests
+│   │   │   └── health.py         # Health checks
 │   │   ├── services/             # Business logic
+│   │   │   ├── qa_engine.py      # Hybrid QA engine
+│   │   │   ├── gemini_summarizer.py # PDF summarization
+│   │   │   ├── document_pdf_generator.py # Document generation
+│   │   │   ├── certificate_generator.py # Certificate generation
+│   │   │   ├── employee_validator.py # Employee validation
+│   │   │   ├── pdf_analyzer.py   # PDF analysis
+│   │   │   ├── doc_parser.py     # Document parsing
+│   │   │   ├── document_request_handler.py # Request handling
+│   │   │   ├── summary_pdf_generator.py # Summary generation
+│   │   │   ├── bad_language_filter.py # Content filtering
+│   │   │   ├── keyword_extractor.py # Keyword extraction
+│   │   │   └── db.py             # Database service
 │   │   ├── data/                 # JSON data files
+│   │   │   ├── employees.json    # Employee database (500+ records)
+│   │   │   ├── qa_dataset.json   # Q&A knowledge base
+│   │   │   ├── bad_words.json    # Content filter
+│   │   │   ├── document_requests.json # Request tracking
+│   │   │   └── hr_notifications.log # HR notifications
+│   │   ├── config.py             # Configuration
 │   │   └── main.py               # FastAPI application
 │   └── requirements.txt          # Python dependencies
 ├── components/                   # React components
 │   ├── ChatInterface.tsx         # Main chat interface
 │   ├── DocumentForm.tsx          # Document request form
 │   ├── PDFUploader.tsx           # PDF processing interface
-│   └── ...
+│   ├── Header.tsx                # Application header
+│   ├── ModeSelector.tsx          # Mode switching
+│   ├── LoadingSpinner.tsx        # Loading indicators
+│   ├── ErrorBoundary.tsx         # Error handling
+│   └── ValidationFeedback.tsx    # Form validation
 ├── lib/                          # Utility functions
 │   ├── types.ts                  # TypeScript type definitions
 │   └── utils.ts                  # Helper functions
 ├── org_data/                     # Organization documents
 │   ├── policies/                 # HR policy PDFs
+│   │   ├── attendance_policy.pdf
+│   │   ├── code_of_conduct.pdf
+│   │   ├── employee_handbook.pdf
+│   │   ├── leave_policy.pdf
+│   │   ├── onboarding.pdf
+│   │   ├── performance_review.pdf
+│   │   ├── reimbursement_policy.pdf
+│   │   └── wfh_policy.pdf
 │   └── it_policies/              # IT policy documents
-└── models/                       # AI model cache
+│       ├── acceptable_use_policy.pdf
+│       ├── device_policy.pdf
+│       ├── helpdesk_guide.pdf
+│       ├── password_policy.pdf
+│       └── software_request_sop.pdf
+├── scripts/                      # Utility scripts
+│   └── ingest_employees.py       # Employee data ingestion
+├── middleware.ts                 # Authentication middleware
+├── package.json                  # Frontend dependencies
+├── requirements.txt              # Backend dependencies
+└── README.md                     # Project documentation
 ```
 
 ## 🚀 Quick Start
@@ -198,12 +266,8 @@ ORG_NAME="Reliance Jio Infotech Solutions"
 - `POST /api/process-pdf` - Process uploaded PDF
 - `GET /api/download-summary-pdf` - Download processed summary
 
-### Document Requests
-- `POST /api/document-requests` - Submit document request
-- `GET /api/document-requests` - Get request status
+### Document Generation
 - `POST /api/generate-document` - Generate official documents
-
-### Employee Management
 - `GET /api/employee-search` - Search employees
 - `POST /api/employee-validate` - Validate employee data
 - `GET /api/employee-by-id` - Get employee by ID
@@ -212,91 +276,99 @@ ORG_NAME="Reliance Jio Infotech Solutions"
 
 ### 1. Hybrid QA Engine
 The system uses a sophisticated hybrid approach combining:
-- **Semantic Search**: Local embeddings for fast policy lookups
-- **Generative AI**: Google Gemini for contextual responses
-- **Knowledge Base**: Curated Q&A dataset with company policies
+- **Semantic Search**: Local embeddings using Sentence Transformers for fast policy lookups
+- **Generative AI**: Google Gemini 2.0 Flash Exp for contextual responses
+- **Knowledge Base**: 500+ curated Q&A pairs with company policies
+- **Fallback System**: Graceful degradation when AI services are unavailable
 
-### 2. Document Processing Pipeline
+### 2. Advanced PDF Processing Pipeline
 ```python
-# Advanced PDF processing workflow
-1. Document Upload → File validation & size check
-2. Content Analysis → Structure detection & table extraction
-3. AI Processing → Chunking & semantic analysis
-4. Summary Generation → Contextual summarization
-5. Output Delivery → Formatted results with download options
+# Comprehensive PDF processing workflow
+1. Document Upload → File validation & size check (up to 50MB)
+2. Structure Analysis → Intelligent content detection
+3. Table Extraction → Advanced table detection and formatting
+4. Content Chunking → Intelligent text segmentation
+5. AI Processing → Gemini 2.0 summarization with context
+6. Result Generation → Comprehensive summaries with tables
+7. Output Delivery → Formatted results with download options
 ```
 
-### 3. Employee Validation System
-- **Fuzzy Matching**: Handles name variations and typos
+### 3. Document Generation System
+- **16 Document Types**: Bonafide letters, experience certificates, offer letters, etc.
+- **Professional Templates**: Company-branded design with ReportLab
+- **Employee Validation**: Fuzzy matching against 500+ employee records
+- **Digital Security**: Enhanced verification elements and signatures
+- **Quality Assurance**: Comprehensive error handling and validation
+
+### 4. Employee Management
+- **500+ Employee Records**: Comprehensive database with real data
+- **Fuzzy Search**: Handles name variations and typos
 - **Multi-field Validation**: Employee ID, email, department verification
 - **Real-time Feedback**: Instant validation results
 - **Data Integrity**: Ensures accurate employee information
 
-### 4. Document Request Workflow
-```mermaid
-graph TD
-    A[User Request] --> B[Document Type Selection]
-    B --> C[Employee Validation]
-    C --> D[Data Collection]
-    D --> E[Form Submission]
-    E --> F[HR Notification]
-    F --> G[Document Generation]
-    G --> H[Delivery]
-```
-
 ## 🎨 UI/UX Features
 
 ### Modern Design System
-- **Responsive Design**: Mobile-first approach
-- **Dark/Light Mode**: Adaptive theming
-- **Smooth Animations**: Framer Motion integration
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Smooth Animations**: Framer Motion integration for fluid interactions
 - **Accessibility**: WCAG compliant components
+- **Error Handling**: Graceful error boundaries and user feedback
 
 ### Interactive Components
-- **Real-time Chat**: Live message updates
-- **Progress Indicators**: Upload and processing status
-- **Toast Notifications**: User feedback system
+- **Real-time Chat**: Live message updates with typing indicators
+- **Progress Tracking**: Upload and processing status with visual feedback
+- **Toast Notifications**: User feedback system with react-hot-toast
 - **Modal Dialogs**: Contextual information display
+- **Form Validation**: Real-time validation with visual feedback
 
 ## 🔒 Security Features
 
 ### Authentication & Authorization
-- **OTP-based Login**: Secure email verification
+- **OTP-based Login**: Secure email verification system
 - **Session Management**: Automatic timeout and logout
+- **Middleware Protection**: Route-level authentication enforcement
 - **CSRF Protection**: Built-in security measures
 - **Input Sanitization**: XSS prevention
 
 ### Data Protection
 - **Secure File Upload**: File type and size validation
-- **Content Filtering**: Bad language detection
+- **Content Filtering**: Bad language detection and moderation
 - **API Rate Limiting**: Request throttling
 - **Error Handling**: Secure error responses
+- **Environment Variables**: Secure configuration management
 
 ## 📊 Data Management
 
 ### Employee Database
-- **504 Records**: Comprehensive employee data
+- **500+ Records**: Comprehensive employee data with real information
 - **Cloud Storage**: MongoDB Atlas (online database) - Employee data only
 - **Local Storage**: JSON files for QA dataset, bad words, and document requests
 - **Search Optimization**: Indexed for fast queries
-- **Data Validation**: Integrity checks
+- **Data Validation**: Integrity checks and fuzzy matching
 
 ### Policy Documents
-- **16 Policy Types**: Complete HR policy coverage
-- **PDF Storage**: Organized document structure
+- **16 Policy Types**: Complete HR and IT policy coverage
+- **PDF Storage**: Organized document structure in org_data/
 - **Version Control**: Document management
 - **Access Control**: Role-based permissions
+
+### Knowledge Base
+- **500+ Q&A Pairs**: Curated knowledge base covering company policies
+- **Semantic Search**: Fast retrieval using local embeddings
+- **AI Enhancement**: Generative responses using Gemini 2.0
+- **Continuous Learning**: Expandable knowledge base
 
 ## 🧪 Testing & Quality Assurance
 
 ### Code Quality
-- **TypeScript**: Full type safety
+- **TypeScript**: Full type safety throughout the application
 - **ESLint**: Code linting and formatting
 - **Error Boundaries**: Graceful error handling
 - **Logging**: Comprehensive system logging
 
 ### Performance Optimization
-- **Code Splitting**: Dynamic imports
+- **Code Splitting**: Dynamic imports for better performance
 - **Image Optimization**: Next.js image optimization
 - **Caching**: API response caching
 - **Bundle Analysis**: Performance monitoring
@@ -323,15 +395,12 @@ This is a **college major project** demonstrating:
 - Collaborative development methodologies
 - Real-world problem solving
 
-## 🗄️ Database Migration
+## 🗄️ Database Architecture
 
 ### MongoDB Atlas Setup (Recommended)
 For online database access, migrate to MongoDB Atlas:
 
 ```bash
-# Run the setup script
-python scripts/setup_mongodb.py
-
 # Install MongoDB dependencies
 pip install motor pymongo
 
@@ -346,7 +415,7 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/hr_assistant?ret
 - ✅ **Backup & Security**: Built-in data protection
 - ✅ **Real-time Sync**: Multiple users can access employee data simultaneously
 
-### Hybrid Approach
+### Hybrid Data Storage
 - **Employee Data**: Stored in MongoDB Atlas (cloud)
 - **QA Dataset**: Kept locally in JSON files for fast access
 - **Bad Words**: Kept locally in JSON files
@@ -376,7 +445,7 @@ GOOGLE_GEMINI_API_KEY=your-production-api-key
 
 ### System Capabilities
 - **Response Time**: < 2 seconds for chat responses
-- **File Processing**: Up to 50MB PDFs
+- **File Processing**: Up to 50MB PDFs with 30+ pages
 - **Concurrent Users**: 100+ simultaneous users
 - **Uptime**: 99.9% availability target
 
