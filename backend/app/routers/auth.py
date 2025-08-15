@@ -12,6 +12,7 @@ from fastapi.security import HTTPBearer
 from pydantic import BaseModel, EmailStr
 import jwt
 from dotenv import load_dotenv
+from ..services.db import db_service
 
 # Load environment variables
 load_dotenv()
@@ -38,24 +39,36 @@ class AuthResponse(BaseModel):
     message: str
     token: Optional[str] = None
 
-def load_employees():
-    """Load employees from JSON file"""
+async def load_employees():
+    """Load employees from MongoDB Atlas or fallback to JSON file"""
     try:
-        with open("app/data/employees.json", "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail="Employee database not found")
+        # Try to get employees from MongoDB Atlas
+        if db_service.employees_collection is not None:
+            cursor = db_service.employees_collection.find({})
+            employees = await cursor.to_list(length=None)
+            return employees
+        else:
+            # Fallback to local JSON file
+            with open("app/data/employees.json", "r") as f:
+                return json.load(f)
+    except Exception as e:
+        # Fallback to local JSON file if MongoDB fails
+        try:
+            with open("app/data/employees.json", "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            raise HTTPException(status_code=500, detail="Employee database not found")
 
-def is_valid_employee(email: str) -> bool:
+async def is_valid_employee(email: str) -> bool:
     """Check if email belongs to one of the first 4 employees"""
-    employees = load_employees()
+    employees = await load_employees()
     # Only first 4 employees are allowed to login
     allowed_employees = employees[:4]
     return any(emp["email"].lower() == email.lower() for emp in allowed_employees)
 
-def get_employee_by_email(email: str):
+async def get_employee_by_email(email: str):
     """Get employee details by email"""
-    employees = load_employees()
+    employees = await load_employees()
     for emp in employees[:4]:  # Only check first 4 employees
         if emp["email"].lower() == email.lower():
             return emp
@@ -136,7 +149,7 @@ async def send_otp(request: EmailRequest):
     email = request.email.lower()
     
     # Check if email is valid
-    if not is_valid_employee(email):
+    if not await is_valid_employee(email):
         raise HTTPException(status_code=400, detail="Invalid Email ID")
     
     # Generate OTP
@@ -187,7 +200,7 @@ async def verify_otp(request: OTPVerification, response: Response):
         raise HTTPException(status_code=400, detail="Invalid OTP")
     
     # Get employee details
-    employee = get_employee_by_email(email)
+    employee = await get_employee_by_email(email)
     if not employee:
         raise HTTPException(status_code=400, detail="Employee not found")
     
@@ -219,7 +232,7 @@ async def resend_otp(request: EmailRequest):
     email = request.email.lower()
     
     # Check if email is valid
-    if not is_valid_employee(email):
+    if not await is_valid_employee(email):
         raise HTTPException(status_code=400, detail="Invalid Email ID")
     
     # Remove existing OTP if any
@@ -264,7 +277,7 @@ async def get_current_user(request: Request):
     
     try:
         payload = verify_jwt_token(token)
-        employee = get_employee_by_email(payload["email"])
+        employee = await get_employee_by_email(payload["email"])
         if not employee:
             raise HTTPException(status_code=401, detail="Employee not found")
         
@@ -289,7 +302,7 @@ async def get_current_user_dependency(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     payload = verify_jwt_token(token)
-    employee = get_employee_by_email(payload["email"])
+    employee = await get_employee_by_email(payload["email"])
     if not employee:
         raise HTTPException(status_code=401, detail="Employee not found")
     

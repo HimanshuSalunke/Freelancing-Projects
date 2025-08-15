@@ -17,8 +17,19 @@ else:
     print("⚠️ Using fallback environment loading")
 
 from .routers import chat, documents, certificates, health, gemini_documents, advanced_qa, document_requests, auth
+from .services.db import db_service
 
 app = FastAPI(title="Org AI Chatbot", version="0.1.0")
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database connection on startup"""
+    await db_service.connect()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Close database connection on shutdown"""
+    await db_service.disconnect()
 
 app.add_middleware(
     CORSMiddleware,

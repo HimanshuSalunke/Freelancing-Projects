@@ -9,7 +9,7 @@ import logging
 
 from ..services.certificate_generator import generate_bonafide_pdf
 from ..services.employee_validator import EmployeeValidator
-from ..services.db import EmployeeDB
+from ..services.db import db_service
 from ..config import auth_disabled
 
 # Configure logging
@@ -19,22 +19,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Initialize services with better error handling
-db = None
 employee_validator = None
 
 def initialize_services():
     """Initialize certificate services with enhanced error handling"""
-    global db, employee_validator
+    global employee_validator
     
     try:
-        # Initialize database
-        try:
-            db = EmployeeDB()
-            logger.info("✅ Database initialized successfully")
-        except Exception as e:
-            logger.error(f"❌ Failed to initialize database: {str(e)}")
-            db = None
-        
         # Initialize employee validator
         try:
             employee_validator = EmployeeValidator()
@@ -43,14 +34,13 @@ def initialize_services():
             logger.error(f"❌ Failed to initialize employee validator: {str(e)}")
             employee_validator = None
             
-        if db and employee_validator:
+        if employee_validator:
             logger.info("✅ All certificate services initialized successfully")
         else:
             logger.warning("⚠️ Some certificate services failed to initialize")
             
     except Exception as e:
         logger.error(f"❌ Failed to initialize certificate services: {str(e)}")
-        db = None
         employee_validator = None
 
 # Initialize services on module load
@@ -119,13 +109,8 @@ async def bonafide(req: CertRequest, request: Request):
         client_ip = request.client.host if request.client else "unknown"
         logger.info(f"📄 Bonafide certificate request from {client_ip}: {req.emp_id}")
         
-        # Check if services are available
-        if not db:
-            logger.error("Database not available")
-            raise HTTPException(status_code=503, detail="Certificate service is temporarily unavailable")
-        
-        # Get employee data
-        employee = db.get_employee(req.emp_id)
+        # Get employee data from MongoDB
+        employee = await db_service.get_employee_by_id(int(req.emp_id))
         if not employee:
             logger.warning(f"Employee not found: {req.emp_id}")
             raise HTTPException(status_code=404, detail="Employee not found")
@@ -302,16 +287,16 @@ async def certificate_health_check():
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
             "services": {
-                "database": db is not None,
+                "database": db_service.employees_collection is not None,
                 "employee_validator": employee_validator is not None
             }
         }
         
-        if not db or not employee_validator:
+        if db_service.employees_collection is None or not employee_validator:
             health_status["status"] = "degraded"
             health_status["warnings"] = []
             
-            if not db:
+            if db_service.employees_collection is None:
                 health_status["warnings"].append("Database not available")
             if not employee_validator:
                 health_status["warnings"].append("Employee validator not available")
