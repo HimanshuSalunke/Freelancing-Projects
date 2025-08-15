@@ -27,6 +27,7 @@ import ModeSelector from '@/components/ModeSelector'
 import Header from '@/components/Header'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { cn } from '@/lib/utils'
+import { Message, ChatSession } from '@/lib/types'
 
 export default function Home() {
   const [currentMode, setCurrentMode] = useState<'chat' | 'pdf' | 'documents'>('chat')
@@ -34,6 +35,11 @@ export default function Home() {
   const [isClient, setIsClient] = useState(false)
   const mainContainerRef = useRef<HTMLDivElement>(null)
   const interfaceSectionRef = useRef<HTMLDivElement>(null)
+
+  // Chat state - lifted up to persist across mode switches
+  const [chatMessages, setChatMessages] = useState<Message[]>([])
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
+  const [currentSessionId, setCurrentSessionId] = useState<string>('')
 
   // Handle hydration and ensure page starts at top
   useEffect(() => {
@@ -59,8 +65,6 @@ export default function Home() {
       }, 100)
     }
   }, [currentMode, shouldScrollToInterface])
-
-
 
   // Handle feature card clicks
   const handleFeatureClick = (featureTitle: string) => {
@@ -237,7 +241,16 @@ export default function Home() {
             className="mt-8"
             ref={interfaceSectionRef}
           >
-            {currentMode === 'chat' && <ChatInterface />}
+            {currentMode === 'chat' && (
+              <ChatInterface 
+                messages={chatMessages}
+                setMessages={setChatMessages}
+                chatSessions={chatSessions}
+                setChatSessions={setChatSessions}
+                currentSessionId={currentSessionId}
+                setCurrentSessionId={setCurrentSessionId}
+              />
+            )}
             {currentMode === 'pdf' && <PDFUploader />}
             {currentMode === 'documents' && <DocumentForm />}
           </motion.div>

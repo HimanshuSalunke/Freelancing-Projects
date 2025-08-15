@@ -189,17 +189,33 @@ class HybridQAEngine:
     
     def _extract_keywords(self, text: str) -> set:
         """Extract important keywords from text"""
-        # Common HR and policy keywords
+        # Common HR and policy keywords with better categorization
         hr_keywords = {
-            'policy', 'policies', 'leave', 'attendance', 'work', 'home', 'wfh', 'benefits', 
-            'salary', 'compensation', 'review', 'performance', 'reimbursement',
-            'dress', 'code', 'conduct', 'handbook', 'onboarding', 'training',
-            'device', 'password', 'software', 'helpdesk', 'it', 'support',
-            'acceptable', 'use', 'device', 'sop', 'procedure', 'hr', 'human', 'resource',
-            'employee', 'employer', 'company', 'organization', 'workplace',
+            # Policy types
+            'policy', 'policies', 'attendance', 'leave', 'work', 'home', 'wfh', 'dress', 'code', 'conduct', 'handbook', 'onboarding', 'performance', 'reimbursement',
+            'device', 'password', 'software', 'helpdesk', 'it', 'support', 'acceptable', 'use', 'sop', 'procedure',
+            
+            # Benefits and compensation
+            'benefits', 'salary', 'compensation', 'bonus', 'insurance', 'health', 'dental', 'vision', 'wellness',
+            
+            # Time and attendance
+            'time', 'hours', 'tardiness', 'late', 'early', 'overtime', 'schedule', 'flexible',
+            
+            # Leave and time off
+            'vacation', 'holiday', 'sick', 'emergency', 'pto', 'paid', 'unpaid', 'carry', 'over',
+            
+            # Workplace behavior
+            'respect', 'dignity', 'harassment', 'discrimination', 'ethics', 'ethical', 'unethical', 'violation', 'report', 'retaliation',
+            
+            # Training and development
+            'training', 'development', 'certification', 'workshop', 'conference', 'career',
+            
+            # General HR terms
+            'hr', 'human', 'resource', 'employee', 'employer', 'company', 'organization', 'workplace', 'manager', 'supervisor',
+            
             # Emotion and greeting keywords
             'hello', 'hi', 'hey', 'good', 'morning', 'afternoon', 'evening', 'how', 'are', 'you',
-            'feel', 'ok', 'well', 'going', 'everything', 'fine', 'great', 'thanks', 'thank'
+            'feel', 'ok', 'well', 'going', 'everything', 'fine', 'great', 'thanks', 'thank', 'welcome', 'bye', 'goodbye'
         }
         
         # Extract words from text
@@ -222,7 +238,7 @@ class HybridQAEngine:
         
         return intersection / union if union > 0 else 0.0
     
-    def _find_similar_question(self, user_question: str, threshold: float = 0.6) -> Optional[Dict]:
+    def _find_similar_question(self, user_question: str, threshold: float = 0.75) -> Optional[Dict]:
         """Find most similar question from dataset using improved semantic search"""
         if not self.sentence_model or not self.qa_embeddings or not self.qa_dataset:
             logger.warning("⚠️ Missing required components for semantic search")
@@ -245,7 +261,7 @@ class HybridQAEngine:
             similarities = np.dot(self.qa_embeddings, user_embedding.T).flatten()
             
             # Find top matches (keep as numpy array for argsort)
-            top_indices = np.argsort(similarities)[::-1][:5]  # Top 5 matches
+            top_indices = np.argsort(similarities)[::-1][:10]  # Top 10 matches for better selection
             
             # Convert to list after finding indices
             similarities = similarities.tolist()
@@ -263,10 +279,29 @@ class HybridQAEngine:
                 # Keyword similarity
                 keyword_sim = self._keyword_similarity(processed_question, dataset_question)
                 
-                # Combined score (weighted average)
-                combined_score = (semantic_sim * 0.7) + (keyword_sim * 0.3)
+                # Combined score (weighted average) - increased weight for keywords
+                combined_score = (semantic_sim * 0.5) + (keyword_sim * 0.5)
                 
                 logger.info(f"🔍 Match {idx}: '{dataset_question}' - Semantic: {semantic_sim:.3f}, Keywords: {keyword_sim:.3f}, Combined: {combined_score:.3f}")
+                
+                # Additional validation: check for exact keyword matches
+                user_keywords = self._extract_keywords(processed_question)
+                dataset_keywords = self._extract_keywords(dataset_question)
+                
+                # If user is asking about a specific policy, ensure the dataset question is about the same policy
+                policy_keywords = ['policy', 'policies', 'attendance', 'leave', 'wfh', 'dress', 'conduct', 'handbook', 'onboarding', 'performance', 'reimbursement', 'it', 'device', 'password', 'software', 'helpdesk']
+                user_policy_keywords = user_keywords.intersection(set(policy_keywords))
+                dataset_policy_keywords = dataset_keywords.intersection(set(policy_keywords))
+                
+                # If user is asking about a specific policy, dataset must contain similar policy keywords
+                if user_policy_keywords and not dataset_policy_keywords.intersection(user_policy_keywords):
+                    logger.info(f"⚠️ Policy keyword mismatch - User: {user_policy_keywords}, Dataset: {dataset_policy_keywords}")
+                    continue
+                
+                # For short questions, require higher keyword similarity
+                if len(processed_question.split()) <= 3 and keyword_sim < 0.4:
+                    logger.info(f"⚠️ Short question requires higher keyword similarity: {keyword_sim:.3f}")
+                    continue
                 
                 if combined_score > best_score:
                     best_score = combined_score
@@ -283,9 +318,21 @@ class HybridQAEngine:
             # Adaptive threshold based on question length and complexity
             adaptive_threshold = threshold
             if len(processed_question.split()) <= 3:  # Short questions
-                adaptive_threshold = threshold - 0.1
+                adaptive_threshold = threshold - 0.05  # Reduced reduction
             elif len(processed_question.split()) >= 10:  # Long questions
                 adaptive_threshold = threshold + 0.1
+            
+            # Additional validation for policy questions
+            if 'policy' in processed_question.lower():
+                # For policy questions, require higher threshold
+                adaptive_threshold = max(adaptive_threshold, 0.7)
+                
+                # Ensure the matched question is actually about a policy
+                if best_match:
+                    matched_question = best_match['qa_pair']['question'].lower()
+                    if 'policy' not in matched_question and not any(policy in matched_question for policy in ['attendance', 'leave', 'wfh', 'dress', 'conduct', 'handbook', 'onboarding', 'performance', 'reimbursement', 'it', 'device', 'password', 'software', 'helpdesk']):
+                        logger.info(f"⚠️ Policy question matched with non-policy answer: {matched_question}")
+                        return None
             
             if best_score >= adaptive_threshold:
                 return best_match
@@ -454,19 +501,36 @@ If you need immediate assistance, please contact HR directly."""
                 
                 logger.info(f"✅ Found similar question in dataset - Combined: {similarity_score:.3f}, Semantic: {semantic_score:.3f}, Keywords: {keyword_score:.3f}")
                 
-                # Use adaptive threshold based on match quality
-                threshold = 0.6
-                if semantic_score > 0.8 or keyword_score > 0.5:
-                    threshold = 0.5  # Lower threshold for high-quality partial matches
+                # Use stricter threshold for policy questions
+                threshold = 0.7  # Increased base threshold
                 
-                # Special handling for policy questions
-                if 'policy' in processed_question:
-                    # For policy questions, prefer general policy descriptions over specific scenarios
+                # For policy questions, require higher threshold
+                if 'policy' in processed_question.lower():
+                    threshold = 0.75  # Higher threshold for policy questions
+                    
+                    # Additional validation for policy questions
                     qa_question = similar_qa['qa_pair']['question'].lower()
-                    if 'what does' in qa_question and 'describe' in qa_question:
-                        threshold = 0.4  # Lower threshold for policy descriptions
-                    elif 'what is' in processed_question and 'what is' in qa_question:
-                        threshold = 0.4  # Lower threshold for "what is" questions
+                    
+                    # Check if the matched question is actually about a policy
+                    policy_indicators = ['policy', 'attendance', 'leave', 'wfh', 'dress', 'conduct', 'handbook', 'onboarding', 'performance', 'reimbursement', 'it', 'device', 'password', 'software', 'helpdesk']
+                    if not any(indicator in qa_question for indicator in policy_indicators):
+                        logger.info(f"⚠️ Policy question matched with non-policy answer: {qa_question}")
+                        # Continue to next step instead of returning incorrect answer
+                        pass
+                    else:
+                        # For policy questions, prefer general policy descriptions
+                        if 'what does' in qa_question and 'describe' in qa_question:
+                            threshold = 0.65  # Slightly lower for policy descriptions
+                        elif 'what is' in processed_question and 'what is' in qa_question:
+                            threshold = 0.65  # Slightly lower for "what is" questions
+                        else:
+                            # For specific policy questions, require very high similarity
+                            threshold = 0.8
+                
+                # For non-policy questions, use standard threshold
+                else:
+                    if semantic_score > 0.85 or keyword_score > 0.6:
+                        threshold = 0.65  # Lower threshold for high-quality matches
                 
                 if similarity_score >= threshold:
                     return similar_qa['qa_pair']['answer']
@@ -490,7 +554,17 @@ If you need immediate assistance, please contact HR directly."""
                     dataset_keywords = self._extract_keywords(qa['question'])
                     if dataset_keywords:
                         keyword_sim = self._keyword_similarity(question, qa['question'])
-                        if keyword_sim > best_keyword_score and keyword_sim > 0.3:  # Minimum keyword threshold
+                        
+                        # Higher threshold for keyword matching
+                        if keyword_sim > best_keyword_score and keyword_sim > 0.5:  # Increased minimum threshold
+                            # Additional validation for policy questions
+                            if 'policy' in processed_question.lower():
+                                qa_question = qa['question'].lower()
+                                policy_indicators = ['policy', 'attendance', 'leave', 'wfh', 'dress', 'conduct', 'handbook', 'onboarding', 'performance', 'reimbursement', 'it', 'device', 'password', 'software', 'helpdesk']
+                                if not any(indicator in qa_question for indicator in policy_indicators):
+                                    logger.info(f"⚠️ Policy question keyword match with non-policy answer: {qa_question}")
+                                    continue
+                            
                             best_keyword_score = keyword_sim
                             best_keyword_match = {
                                 'qa_pair': qa,
@@ -498,9 +572,11 @@ If you need immediate assistance, please contact HR directly."""
                                 'index': i
                             }
                 
-                if best_keyword_match:
+                if best_keyword_match and best_keyword_match['similarity'] > 0.6:  # Higher final threshold
                     logger.info(f"✅ Found keyword-based match (score: {best_keyword_match['similarity']:.3f})")
                     return best_keyword_match['qa_pair']['answer']
+                else:
+                    logger.info(f"⚠️ Keyword match score {best_keyword_match['similarity']:.3f if best_keyword_match else 0:.3f} below threshold 0.6")
         except Exception as e:
             logger.error(f"❌ Error in keyword fallback: {str(e)}")
         

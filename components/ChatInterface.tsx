@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Send, Bot, FileCheck, Upload, X, Building, Briefcase, FileText, CheckCircle, Sparkles, Calendar, User, DollarSign, CreditCard, Plane, Globe, Shield, Search, UserCheck, Loader2, Download, Eye, RefreshCw, QrCode, Plus, Edit, Trash2, History, Trash } from 'lucide-react'
 import { Message, ChatSession } from '@/lib/types'
 import toast from 'react-hot-toast'
@@ -65,7 +65,8 @@ function ChatDocumentForm() {
         { id: "employeeId", label: "Employee ID *", type: "text", placeholder: "Enter Employee ID", required: true },
         { id: "designation", label: "Designation *", type: "text", placeholder: "e.g., Software Engineer", required: true },
         { id: "department", label: "Department *", type: "text", placeholder: "e.g., Engineering", required: true },
-        { id: "joiningDate", label: "Joining Date *", type: "date", required: true }
+        { id: "joiningDate", label: "Joining Date *", type: "date", required: true },
+        { id: "appointmentDate", label: "Appointment Date *", type: "date", required: true }
       ]
     },
     {
@@ -105,7 +106,7 @@ function ChatDocumentForm() {
         { id: "designation", label: "Designation *", type: "text", placeholder: "e.g., Software Engineer", required: true },
         { id: "department", label: "Department *", type: "text", placeholder: "e.g., Engineering", required: true },
         { id: "joiningDate", label: "Joining Date *", type: "date", required: true },
-        { id: "month", label: "Month *", type: "text", placeholder: "e.g., January 2024", required: true }
+        { id: "salaryAmount", label: "Salary Amount *", type: "text", placeholder: "e.g., 75,000 per month", required: true }
       ]
     },
     {
@@ -118,7 +119,7 @@ function ChatDocumentForm() {
         { id: "designation", label: "Designation *", type: "text", placeholder: "e.g., Software Engineer", required: true },
         { id: "department", label: "Department *", type: "text", placeholder: "e.g., Engineering", required: true },
         { id: "joiningDate", label: "Joining Date *", type: "date", required: true },
-        { id: "financialYear", label: "Financial Year *", type: "text", placeholder: "e.g., 2023-24", required: true }
+        { id: "salaryAmount", label: "Salary Amount *", type: "text", placeholder: "e.g., 75,000 per month", required: true }
       ]
     },
     {
@@ -131,7 +132,8 @@ function ChatDocumentForm() {
         { id: "designation", label: "Designation *", type: "text", placeholder: "e.g., Software Engineer", required: true },
         { id: "department", label: "Department *", type: "text", placeholder: "e.g., Engineering", required: true },
         { id: "joiningDate", label: "Joining Date *", type: "date", required: true },
-        { id: "salaryAmount", label: "Salary Amount *", type: "text", placeholder: "e.g., 75,000 per month", required: true }
+        { id: "salaryAmount", label: "Salary Amount *", type: "text", placeholder: "e.g., 75,000 per month", required: true },
+        { id: "purpose", label: "Purpose *", type: "text", placeholder: "e.g., Loan application, visa", required: true }
       ]
     },
     {
@@ -143,8 +145,7 @@ function ChatDocumentForm() {
         { id: "employeeId", label: "Employee ID *", type: "text", placeholder: "Enter Employee ID", required: true },
         { id: "designation", label: "Designation *", type: "text", placeholder: "e.g., Software Engineer", required: true },
         { id: "department", label: "Department *", type: "text", placeholder: "e.g., Engineering", required: true },
-        { id: "joiningDate", label: "Joining Date *", type: "date", required: true },
-        { id: "uanNumber", label: "UAN Number *", type: "text", placeholder: "Enter UAN number", required: true }
+        { id: "joiningDate", label: "Joining Date *", type: "date", required: true }
       ]
     },
     {
@@ -240,6 +241,11 @@ function ChatDocumentForm() {
       return
     }
 
+    if (query.length < 2) {
+      setEmployeeSuggestions([])
+      return
+    }
+
     setIsSearching(true)
     try {
       const response = await fetch('/api/employee-search', {
@@ -251,28 +257,50 @@ function ChatDocumentForm() {
       })
 
       if (!response.ok) {
-        throw new Error('Search failed')
+        const errorData = await response.json()
+        console.error('Employee search failed:', errorData)
+        
+        const errorMessage = errorData.error || `Employee search failed: ${response.status}`
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
       
-      if (data.success) {
-        setEmployeeSuggestions(data.employees || [])
+      // Validate response
+      if (!data.success) {
+        throw new Error(data.error || 'Employee search failed')
+      }
+      
+      if (data.suggestions && data.suggestions.length > 0) {
+        setEmployeeSuggestions(data.suggestions)
       } else {
         setEmployeeSuggestions([])
+        if (query.length >= 3) {
+          toast('No employees found matching your search')
+        }
       }
     } catch (error) {
-      console.error('Search error:', error)
+      console.error('Employee search error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      toast.error(`Failed to search employees: ${errorMessage}`)
       setEmployeeSuggestions([])
     } finally {
       setIsSearching(false)
     }
   }
 
-  const handleManualSearch = () => {
-    if (employeeSearchQuery.trim()) {
-      searchEmployees(employeeSearchQuery)
+  const handleManualSearch = async () => {
+    if (!employeeSearchQuery.trim()) {
+      toast.error('Please enter a search query')
+      return
     }
+
+    if (employeeSearchQuery.length < 2) {
+      toast.error('Please enter at least 2 characters to search')
+      return
+    }
+
+    await searchEmployees(employeeSearchQuery)
   }
 
   // Convert date from DD-MM-YYYY to YYYY-MM-DD format for HTML date input
@@ -295,13 +323,15 @@ function ChatDocumentForm() {
   }
 
   const fillFormWithEmployee = (employee: any) => {
-    setFormData({
+    const newFormData = {
       employeeName: employee.full_name || '',
       employeeId: employee.employee_code || '',
       designation: employee.designation || '',
       department: employee.department || '',
       joiningDate: convertDateFormat(employee.joining_date || ''),
-    })
+    }
+
+    setFormData(newFormData)
     setEmployeeSuggestions([])
     setEmployeeSearchQuery('')
     setValidationResult(null)
@@ -927,8 +957,23 @@ function ChatPDFUploader() {
   )
 }
 
-export default function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([])
+interface ChatInterfaceProps {
+  messages: Message[]
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+  chatSessions: ChatSession[]
+  setChatSessions: React.Dispatch<React.SetStateAction<ChatSession[]>>
+  currentSessionId: string
+  setCurrentSessionId: (sessionId: string) => void
+}
+
+export default function ChatInterface({ 
+  messages, 
+  setMessages, 
+  chatSessions, 
+  setChatSessions, 
+  currentSessionId, 
+  setCurrentSessionId 
+}: ChatInterfaceProps) {
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isClient, setIsClient] = useState(false)
@@ -939,8 +984,6 @@ export default function ChatInterface() {
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isRegenerating, setIsRegenerating] = useState(false)
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
-  const [currentSessionId, setCurrentSessionId] = useState<string>('')
   const [showChatHistory, setShowChatHistory] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -948,7 +991,7 @@ export default function ChatInterface() {
   // Load chat sessions from localStorage on mount
   useEffect(() => {
     const savedSessions = localStorage.getItem('chatSessions')
-    if (savedSessions) {
+    if (savedSessions && chatSessions.length === 0) {
       try {
         const sessions = JSON.parse(savedSessions).map((session: any) => ({
           ...session,
@@ -965,33 +1008,35 @@ export default function ChatInterface() {
         console.error('Error loading chat sessions:', error)
       }
     }
-  }, [])
+  }, [chatSessions.length, setChatSessions])
 
   // Handle hydration
   useEffect(() => {
     setIsClient(true)
-    // Initialize messages only on client side - same as HTML version
-    const initialMessage: Message = {
+    // Initialize messages only on client side and if no messages exist
+    if (messages.length === 0) {
+      const initialMessage: Message = {
         id: '1',
         type: 'assistant',
-        content: 'I\'m ready to help you with HR questions! 💬\n\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (type "I need a document")\n• Upload PDFs for summarization (type "summarize PDF")\n• Powered by semantic search and AI assistance\n• Quick and accurate responses to your queries\n\nJust type your question and I\'ll help you find the information you need!',
+        content: 'I\'m ready to help you with HR questions! 💬\n\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (use "Documents" button or type "I need a document")\n• Upload PDFs for summarization (use "Summarize PDF" button or type "summarize PDF")\n• Powered by semantic search and AI assistance\n• Quick and accurate responses to your queries\n\n💡 **Quick Access:** Use the buttons below or type your commands!\n\nJust type your question and I\'ll help you find the information you need!',
         timestamp: new Date()
       }
-    setMessages([initialMessage])
-    
-    // Create initial session
-    const sessionId = Date.now().toString()
-    const newSession: ChatSession = {
-      id: sessionId,
-      title: 'New Chat',
-      messages: [initialMessage],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isActive: true
+      setMessages([initialMessage])
+      
+      // Create initial session
+      const sessionId = Date.now().toString()
+      const newSession: ChatSession = {
+        id: sessionId,
+        title: 'New Chat',
+        messages: [initialMessage],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isActive: true
+      }
+      setCurrentSessionId(sessionId)
+      setChatSessions([newSession])
     }
-    setCurrentSessionId(sessionId)
-    setChatSessions([newSession])
-  }, [])
+  }, [messages.length, setMessages, setCurrentSessionId, setChatSessions])
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -1017,6 +1062,11 @@ export default function ChatInterface() {
     }
   }, [isLoading])
 
+  // Debug form state changes
+  useEffect(() => {
+    console.log('Form state changed - showDocumentForm:', showDocumentForm, 'showPDFUploader:', showPDFUploader)
+  }, [showDocumentForm, showPDFUploader])
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1029,32 +1079,115 @@ export default function ChatInterface() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [showChatHistory])
 
-  // Check for document or PDF requests
+  // Check for document or PDF requests - Enhanced for various English proficiency levels
   const checkForFormTriggers = (message: string) => {
-    const lowerMessage = message.toLowerCase()
+    const lowerMessage = message.toLowerCase().trim()
     
-    // Document request triggers
+    // Document request triggers - comprehensive coverage for various English levels
     const documentTriggers = [
-      'i need a document', 'request document', 'get document', 'want document',
-      'document request', 'generate document', 'create document', 'certificate',
-      'experience letter', 'employment letter', 'salary slip', 'form 16',
-      'bonafide', 'noc', 'relieving letter', 'offer letter', 'appointment letter'
+      // Basic needs
+      'i need', 'i want', 'i require', 'i looking for', 'i searching for',
+      'need', 'want', 'require', 'looking for', 'searching for', 'asking for',
+      
+      // Document variations
+      'document', 'documents', 'doc', 'docs', 'paper', 'papers',
+      'certificate', 'certificates', 'cert', 'certs', 'letter', 'letters',
+      'form', 'forms', 'slip', 'slips', 'statement', 'statements',
+      
+      // Common misspellings and variations
+      'documant', 'documnt', 'certificat', 'certifcat', 'letr', 'ltr',
+      'dokument', 'dokumnt', 'sertifikat', 'sertifcat',
+      
+      // Action words
+      'get', 'give', 'make', 'create', 'generate', 'produce', 'issue',
+      'provide', 'send', 'download', 'print', 'copy', 'duplicate',
+      
+      // Specific document types (various spellings)
+      'experience', 'experiance', 'employment', 'employmnt', 'salary', 'salry',
+      'bonafide', 'bonafid', 'bonafied', 'noc', 'relieving', 'relieving',
+      'offer', 'offr', 'appointment', 'appointmnt', 'promotion', 'promotn',
+      'verification', 'verificatn', 'medical', 'medicl', 'insurance', 'insuranc',
+      'travel', 'travl', 'visa', 'visa', 'business', 'busines', 'id card', 'idcard',
+      'pf', 'pf statement', 'uan', 'tax', 'form 16', 'form16',
+      
+      // Common phrases in different English levels
+      'help me get', 'can you give', 'please provide', 'i would like',
+      'i need help', 'can you help', 'please help', 'help me',
+      'show me', 'tell me', 'give me', 'send me', 'make for me',
+      
+      // Informal/casual language
+      'gimme', 'wanna', 'gonna', 'lemme', 'pls', 'plz', 'thx', 'thanks',
+      
+      // Question formats
+      'how to get', 'where to get', 'when can i get', 'what do i need',
+      'can i have', 'may i have', 'is it possible to get',
+      
+      // Regional variations
+      'kindly', 'please arrange', 'please issue', 'please make',
+      'need urgently', 'want immediately', 'require asap', 'need fast'
     ]
     
-    // PDF summarization triggers
+    // PDF summarization triggers - various ways to express
     const pdfTriggers = [
-      'summarize pdf', 'upload pdf', 'pdf summarization', 'summarize document',
-      'pdf processing', 'document summarization', 'upload document'
+      // Basic PDF actions
+      'pdf', 'pdfs', 'file', 'files',
+      
+      // Summarization actions
+      'summarize', 'summarise', 'summary', 'summaries', 'summarization', 'summarisation',
+      'summariz', 'summaris', 'summry', 'summri', 'brief', 'briefing',
+      
+      // Upload/process actions
+      'upload', 'uplod', 'process', 'proces', 'analyze', 'analyse', 'analyz',
+      'read', 'reed', 'extract', 'extract', 'convert', 'convrt',
+      
+      // Common phrases
+      'upload pdf', 'process pdf', 'analyze pdf', 'read pdf', 'extract from pdf',
+      'summarize pdf', 'pdf summary', 'pdf analysis', 'pdf processing',
+      
+      // Informal variations
+      'upload my pdf', 'process my pdf', 'read my file',
+      'can you read', 'help me understand', 'what is in this',
+      
+      // Question formats
+      'how to upload', 'where to upload', 'can i upload', 'is it possible to upload',
+      'what does this say', 'what is this about', 'tell me about this', 'summarize this'
     ]
     
-    if (documentTriggers.some(trigger => lowerMessage.includes(trigger))) {
-      return 'document'
-    }
+    // Check for PDF triggers first (more specific for PDF operations)
+    const pdfSpecificKeywords = ['summarize', 'summarise', 'upload', 'process', 'analyze', 'analyse', 'read', 'extract']
+    const hasPDFSpecificKeywords = pdfSpecificKeywords.some(keyword => lowerMessage.includes(keyword))
     
-    if (pdfTriggers.some(trigger => lowerMessage.includes(trigger))) {
+    if (hasPDFSpecificKeywords && pdfTriggers.some(trigger => lowerMessage.includes(trigger))) {
+      console.log('PDF trigger detected:', lowerMessage)
       return 'pdf'
     }
     
+    // Check for document triggers
+    if (documentTriggers.some(trigger => lowerMessage.includes(trigger))) {
+      console.log('Document trigger detected:', lowerMessage)
+      return 'document'
+    }
+    
+    // Additional fuzzy matching for common patterns
+    const hasDocumentKeywords = ['certificate', 'letter', 'form', 'slip', 'statement', 'bonafide', 'noc', 'relieving', 'offer', 'appointment', 'promotion'].some(keyword => 
+      lowerMessage.includes(keyword)
+    )
+    
+    const hasPDFKeywords = ['pdf', 'summarize', 'summarise', 'upload', 'process', 'analyze', 'analyse'].some(keyword => 
+      lowerMessage.includes(keyword)
+    )
+    
+    if (hasPDFKeywords) {
+      console.log('Fuzzy PDF trigger detected:', lowerMessage)
+      return 'pdf'
+    }
+    
+    if (hasDocumentKeywords) {
+      console.log('Fuzzy document trigger detected:', lowerMessage)
+      return 'document'
+    }
+    
+    console.log('No trigger detected for:', lowerMessage)
     return null
   }
 
@@ -1069,7 +1202,7 @@ export default function ChatInterface() {
       timestamp: new Date()
     }
 
-    setMessages(prev => {
+    setMessages((prev: Message[]) => {
       const newMessages = [...prev, userMessage]
       
       // Update current session
@@ -1084,8 +1217,10 @@ export default function ChatInterface() {
 
     // Check for form triggers
     const formType = checkForFormTriggers(inputMessage.trim())
+    console.log('Form type detected:', formType, 'for message:', inputMessage.trim())
     
     if (formType === 'document') {
+      console.log('Setting document form to true')
       setShowDocumentForm(true)
       setShowPDFUploader(false)
       addMessage('assistant', '📝 I\'ll help you request a document! Please fill out the form below to generate your document.')
@@ -1094,9 +1229,25 @@ export default function ChatInterface() {
     }
     
     if (formType === 'pdf') {
+      console.log('Setting PDF uploader to true')
       setShowPDFUploader(true)
       setShowDocumentForm(false)
       addMessage('assistant', '📄 I\'ll help you summarize your PDF! Please upload your document below.')
+      setIsLoading(false)
+      return
+    }
+    
+    // Fallback: Check for any document-related keywords that might have been missed
+    const fallbackDocumentKeywords = ['document', 'certificate', 'letter', 'form', 'slip', 'statement']
+    const hasDocumentKeywords = fallbackDocumentKeywords.some(keyword => 
+      inputMessage.toLowerCase().includes(keyword)
+    )
+    
+    if (hasDocumentKeywords && !formType) {
+      console.log('Fallback document trigger detected')
+      setShowDocumentForm(true)
+      setShowPDFUploader(false)
+      addMessage('assistant', '📝 I\'ll help you request a document! Please fill out the form below to generate your document.')
       setIsLoading(false)
       return
     }
@@ -1153,7 +1304,7 @@ export default function ChatInterface() {
       content,
       timestamp: new Date()
     }
-    setMessages(prev => {
+    setMessages((prev: Message[]) => {
       const newMessages = [...prev, message]
       
       // Update current session
@@ -1188,20 +1339,20 @@ export default function ChatInterface() {
 
   // Update current session
   const updateCurrentSession = (newMessages: Message[]) => {
-    setChatSessions(prev => {
-      const updated = prev.map(session => 
-        session.id === currentSessionId 
-          ? { 
-              ...session, 
-              messages: newMessages, 
-              updatedAt: new Date(),
-              title: generateSessionTitle(newMessages)
-            }
-          : { ...session, isActive: false }
-      )
-      saveChatSessions(updated)
-      return updated
-    })
+          setChatSessions((prev: ChatSession[]) => {
+        const updated = prev.map((session: ChatSession) => 
+          session.id === currentSessionId 
+            ? { 
+                ...session, 
+                messages: newMessages, 
+                updatedAt: new Date(),
+                title: generateSessionTitle(newMessages)
+              }
+            : { ...session, isActive: false }
+        )
+        saveChatSessions(updated)
+        return updated
+      })
   }
 
   // Generate session title from first user message
@@ -1224,7 +1375,7 @@ export default function ChatInterface() {
     const initialMessage: Message = {
       id: Date.now().toString(),
       type: 'assistant',
-      content: 'I\'m ready to help you with HR questions! 💬\n\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (type "I need a document")\n• Upload PDFs for summarization (type "summarize PDF")\n• Powered by semantic search and AI assistance\n• Quick and accurate responses to your queries\n\nJust type your question and I\'ll help you find the information you need!',
+      content: 'I\'m ready to help you with HR questions! 💬\n\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (use "Documents" button or type "I need a document")\n• Upload PDFs for summarization (use "Summarize PDF" button or type "summarize PDF")\n• Powered by semantic search and AI assistance\n• Quick and accurate responses to your queries\n\n💡 **Quick Access:** Use the buttons below or type your commands!\n\nJust type your question and I\'ll help you find the information you need!',
       timestamp: new Date()
     }
 
@@ -1240,8 +1391,8 @@ export default function ChatInterface() {
 
     setMessages([initialMessage])
     setCurrentSessionId(sessionId)
-    setChatSessions(prev => {
-      const updated = [...prev.map(s => ({ ...s, isActive: false })), newSession]
+    setChatSessions((prev: ChatSession[]) => {
+      const updated = [...prev.map((s: ChatSession) => ({ ...s, isActive: false })), newSession]
       saveChatSessions(updated)
       return updated
     })
@@ -1269,7 +1420,7 @@ export default function ChatInterface() {
     if (session) {
       setMessages(session.messages)
       setCurrentSessionId(sessionId)
-      setChatSessions(prev => prev.map(s => ({ ...s, isActive: s.id === sessionId })))
+      setChatSessions((prev: ChatSession[]) => prev.map((s: ChatSession) => ({ ...s, isActive: s.id === sessionId })))
       setShowChatHistory(false)
       
       // Focus on input
@@ -1283,8 +1434,8 @@ export default function ChatInterface() {
   const deleteChatSession = (sessionId: string) => {
     if (!confirm('Are you sure you want to delete this chat?')) return
     
-    setChatSessions(prev => {
-      const updated = prev.filter(s => s.id !== sessionId)
+    setChatSessions((prev: ChatSession[]) => {
+      const updated = prev.filter((s: ChatSession) => s.id !== sessionId)
       saveChatSessions(updated)
       return updated
     })
@@ -1342,8 +1493,8 @@ export default function ChatInterface() {
       }
 
       // Update message in frontend
-      setMessages(prev => {
-        const updatedMessages = prev.map(msg => 
+      setMessages((prev: Message[]) => {
+        const updatedMessages = prev.map((msg: Message) => 
           msg.id === editingMessageId 
             ? { ...msg, content: editingContent.trim(), edited: true, editedAt: new Date() }
             : msg
@@ -1391,8 +1542,8 @@ export default function ChatInterface() {
   const regenerateResponseForEditedMessage = async (messageId: string, newContent: string) => {
     try {
       // Find the edited message and remove the response that follows it
-      setMessages(prev => {
-        const editedMessageIndex = prev.findIndex(msg => msg.id === messageId)
+      setMessages((prev: Message[]) => {
+        const editedMessageIndex = prev.findIndex((msg: Message) => msg.id === messageId)
         if (editedMessageIndex === -1) return prev
 
         // Remove the response that follows the edited message
@@ -1473,7 +1624,7 @@ export default function ChatInterface() {
       const messageToDelete = messages[messageIndex]
       
       // Remove message and its corresponding response from frontend
-      setMessages(prev => {
+      setMessages((prev: Message[]) => {
         let updatedMessages = [...prev]
         
         if (messageToDelete.type === 'user') {
@@ -1481,14 +1632,14 @@ export default function ChatInterface() {
           const nextMessage = prev[messageIndex + 1]
           if (nextMessage && nextMessage.type === 'assistant') {
             // Remove both the user message and the assistant response
-            updatedMessages = prev.filter((_, index) => index !== messageIndex && index !== messageIndex + 1)
+            updatedMessages = prev.filter((_: Message, index: number) => index !== messageIndex && index !== messageIndex + 1)
           } else {
             // Remove only the user message
-            updatedMessages = prev.filter((_, index) => index !== messageIndex)
+            updatedMessages = prev.filter((_: Message, index: number) => index !== messageIndex)
           }
         } else {
           // For assistant messages, just remove the message
-          updatedMessages = prev.filter((_, index) => index !== messageIndex)
+          updatedMessages = prev.filter((_: Message, index: number) => index !== messageIndex)
         }
         
         // Update current session
@@ -1728,6 +1879,7 @@ export default function ChatInterface() {
           className="h-[400px] md:h-[500px] overflow-y-auto overflow-x-hidden p-4 space-y-4 scroll-smooth"
           data-scrollable="true"
         >
+
           {messages.map((message) => (
             <div
               key={message.id}
@@ -1813,12 +1965,14 @@ export default function ChatInterface() {
                     <X className="w-4 h-4 text-gray-500" />
                   </button>
                 </div>
-                                 <div className="max-h-96 overflow-y-auto">
+                <div className="max-h-96 overflow-y-auto">
                   <ChatDocumentForm />
-                 </div>
+                </div>
               </div>
             </div>
           )}
+          
+
 
           {/* Inline PDF Uploader */}
           {showPDFUploader && (
@@ -1869,7 +2023,7 @@ export default function ChatInterface() {
 
         {/* Input */}
         <div className="border-t border-gray-200/50 p-6 bg-gradient-to-r from-gray-50/50 to-white">
-                      {isEditing ? (
+          {isEditing ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50/50 px-4 py-2 rounded-xl border border-blue-200/50">
                   <Edit className="w-4 h-4 text-blue-600" />

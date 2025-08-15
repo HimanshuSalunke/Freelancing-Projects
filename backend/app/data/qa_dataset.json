@@ -56,6 +56,14 @@
     "answer": "See you later! 👋 Thanks for using the Reliance Jio Infotech Solutions AI assistant. I'm here whenever you need help with HR questions, document processing, or certificate generation. Have a great day!"
   },
   {
+    "question": "what is the IT policy",
+    "answer": "**IT Policy Overview**\n\n**Device Management:**\n• Company-issued devices must be used for work purposes\n• Personal devices may be used with proper security measures\n• All devices must have updated antivirus software\n\n**Password Security:**\n• Strong passwords required (minimum 8 characters, mix of letters, numbers, symbols)\n• Passwords must be changed every 90 days\n• Multi-factor authentication enabled for all accounts\n\n**Software & Applications:**\n• Only approved software can be installed on company devices\n• Software requests must be submitted through IT helpdesk\n• Regular software updates are mandatory\n\n**Helpdesk Support:**\n• IT support available 24/7 through helpdesk\n• Contact: it-support@reliancejio.com\n• Phone: Available through internal directory\n\n**Policy Location:** See internal IT policy documents for complete details."
+  },
+  {
+    "question": "what is the HR policy",
+    "answer": "**HR Policy Overview**\n\n**Core HR Policies:**\n• **Attendance Policy** - Work hours, tardiness, flexible scheduling\n• **Leave Policy** - 20 days annual leave, submission requirements\n• **Work From Home Policy** - 3 days/week, manager approval required\n• **Dress Code Policy** - Business casual attire\n• **Performance Review Policy** - Bi-annual reviews in June and December\n• **Reimbursement Policy** - 30-day submission, receipts required\n• **Code of Conduct** - Respect, zero tolerance for harassment\n• **Employee Handbook** - Mission, values, workplace expectations\n• **Onboarding** - 2-week program for new hires\n• **IT Policies** - Device, password, software, helpdesk guidelines\n\n**Contact Information:**\n• **HR Email:** hr@reliancejio.com\n• **HR Phone:** Available through internal directory\n• **IT Support:** it-support@reliancejio.com\n\n**Policy Location:** All policies available in internal HR portal and policy documents."
+  },
+  {
     "question": "What does the Attendance Policy describe?",
     "answer": "**Attendance Policy**\n\n**Work Hours:** Employees must log in by 9:30 AM and log out after 8 hours of work.\n\n**Tardiness:** Repeated tardiness may result in HR intervention.\n\n**Contact:** For questions, please contact us at hr@reliancejio.com.\n\n**Policy Location:** See internal policy document for complete details."
   },

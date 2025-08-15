@@ -94,39 +94,61 @@ class ChatResponse(BaseModel):
 
 
 def get_simple_response(message: str) -> str:
-    """Get simple hardcoded responses like HTML version - no AI models"""
+    """Get simple hardcoded responses - Enhanced for various English proficiency levels"""
     lower_message = message.lower().strip()
     
-    # Simple keyword-based responses like HTML version
-    if any(word in lower_message for word in ['hello', 'hi', 'hey']):
+    # Enhanced greeting detection - various ways to say hello
+    greeting_words = ['hello', 'hi', 'hey', 'hii', 'hiii', 'hallo', 'halo', 'hlo', 'hlw', 'hlo', 'hiiii']
+    if any(word in lower_message for word in greeting_words):
         return "👋 Hello! I'm your Reliance Jio Infotech Solutions AI Assistant. I can help you with HR questions, document requests, and PDF processing. How can I assist you today?"
     
-    elif any(word in lower_message for word in ['help', 'what can you do', 'capabilities']):
+    # Enhanced help detection - various ways to ask for help
+    help_words = ['help', 'what can you do', 'capabilities', 'help me', 'can you help', 'please help', 'i need help', 'what you can do', 'what do you do', 'how can you help', 'what services', 'what help', 'help pls', 'help plz']
+    if any(word in lower_message for word in help_words):
         return "🤖 **Reliance Jio Infotech Solutions - Your Intelligent Companion**\n\nI can help you with three main services:\n\n💬 **HR Q&A Chat**\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (type \"I need a document\")\n• Quick and accurate responses to your queries\n\n📄 **PDF Summarization**\n• Upload PDFs up to 50MB\n• Handles large documents (30+ pages)\n• Extracts and formats table data\n• Real-time processing with progress tracking\n\n📜 **Document Requests**\n• Request any of 16 official document types\n• Official Reliance Jio Infotech Solutions format\n• Professional document generation\n• Immediate download available\n• **Strict validation:** ALL fields must match exactly with employee records\n\n💡 **Quick Commands:**\n• Type \"qa\" or \"chat\" to switch to HR Q&A mode\n• Type \"summarize\" or \"pdf\" to switch to PDF mode\n• Type \"I need a document\" to request official documents\n• Search employees: \"search employee [name or ID]\"\n• Use the mode buttons above for quick switching\n\n⚠️ **Important:** Document generation requires ALL employee details to match our records exactly."
     
-    elif any(word in lower_message for word in ['policy', 'policies', 'leave', 'attendance', 'benefits']):
-        return "📋 **Company Policies & Benefits**\n\nHere are some common policies and benefits:\n\n**Leave Policies:**\n• Annual Leave: 21 days per year\n• Sick Leave: 15 days per year\n• Maternity Leave: 26 weeks\n• Paternity Leave: 15 days\n\n**Attendance:**\n• Standard working hours: 9 AM - 6 PM\n• Flexible timing available\n• Remote work options\n\n**Benefits:**\n• Health Insurance\n• Provident Fund\n• Gratuity\n• Performance bonuses\n\nFor specific policy details, please contact HR or use the Document Requests mode to get official policy documents."
-    
-    elif any(word in lower_message for word in ['salary', 'compensation', 'pay']):
+    # Enhanced salary detection - various ways to ask about salary
+    salary_words = ['salary', 'compensation', 'pay', 'payment', 'money', 'income', 'earnings', 'wage', 'wages', 'paycheck', 'pay check', 'pay slip', 'payslip', 'salary slip', 'salaryslip', 'form 16', 'form16', 'tax', 'tax document', 'taxdoc']
+    if any(word in lower_message for word in salary_words):
         return "💰 **Salary & Compensation**\n\nSalary information is confidential and varies by role and experience. For specific salary-related queries:\n\n• **Salary Slips:** Use Document Requests mode\n• **Tax Documents:** Request Form 16 through Document Requests\n• **Salary Certificate:** Available in Document Requests\n\nPlease use the Document Requests mode to generate official salary-related documents."
     
-    elif any(word in lower_message for word in ['document', 'certificate', 'letter']):
+    # Enhanced document detection - various ways to ask for documents
+    document_words = ['document', 'certificate', 'letter', 'documents', 'certificates', 'letters', 'doc', 'docs', 'cert', 'certs', 'form', 'forms', 'paper', 'papers', 'slip', 'slips', 'statement', 'statements', 'documant', 'certificat', 'letr', 'dokument', 'sertifikat']
+    if any(word in lower_message for word in document_words):
         return "📜 **Document Requests**\n\nI can help you generate official documents. Please:\n\n1. **Switch to Document Requests mode** using the mode selector above\n2. **Select a document type** from the 16 available options\n3. **Fill in the required details**\n4. **Generate and download** your document\n\n**Available Documents:**\n• Bonafide / Employment Verification Letter\n• Experience Certificate\n• Offer Letter Copy\n• Appointment Letter Copy\n• Promotion Letter\n• Relieving Letter\n• Salary Slips\n• Form 16 / Tax Documents\n• Salary Certificate\n• PF Statement / UAN details\n• No Objection Certificate (NOC)\n• Non-Disclosure Agreement Copy\n• ID Card Replacement\n• Medical Insurance Card Copy\n• Business Travel Authorization Letter\n• Visa Support Letter\n\n⚠️ **Important:** Document generation requires ALL employee details to match our records exactly."
     
-    elif any(word in lower_message for word in ['employee', 'search', 'find']):
+    # Enhanced employee search detection
+    employee_words = ['employee', 'search', 'find', 'look for', 'searching', 'finding', 'looking', 'emp', 'employe', 'empl', 'searching for', 'looking for', 'find employee', 'search employee', 'look employee']
+    if any(word in lower_message for word in employee_words):
         return "🔍 **Employee Search**\n\nTo search for employees:\n\n• Use the employee search feature in Document Requests mode\n• Type \"search employee [name or ID]\" for quick search\n• Auto-fill forms with \"fill form for [name or ID]\"\n\nEmployee search helps you find specific employees and auto-fill document forms with their details."
     
-    elif any(word in lower_message for word in ['thank', 'thanks']):
+    # Enhanced thank you detection
+    thank_words = ['thank', 'thanks', 'thx', 'thnx', 'thank you', 'thankyou', 'thanks a lot', 'thank u', 'thnks', 'thnk u', 'tq', 'tq so much']
+    if any(word in lower_message for word in thank_words):
         return "🙏 You're welcome! I'm here to help you with all your document processing and certificate generation needs. Feel free to ask if you need anything else!"
     
-    elif any(word in lower_message for word in ['status', 'health']):
+    # Enhanced status detection
+    status_words = ['status', 'health', 'working', 'system', 'server', 'online', 'offline', 'up', 'down', 'running', 'operational']
+    if any(word in lower_message for word in status_words):
         return "🟢 **System Status:** All services are operational\n\n💬 **HR Q&A Chat:** Active\n📊 **PDF Processing:** Active\n📜 **Document Generation:** Active\n🌐 **API Endpoints:** All responding\n\nEverything is working perfectly! 🚀"
     
-    elif any(word in lower_message for word in ['pdf', 'summarize', 'upload']):
+    # Enhanced PDF detection
+    pdf_words = ['pdf', 'summarize', 'upload', 'process', 'analyze', 'read', 'extract', 'convert', 'summarise', 'summarization', 'summarisation', 'pdfs', 'document', 'documents', 'file', 'files', 'upload pdf', 'process pdf', 'analyze pdf', 'read pdf', 'extract from pdf', 'summarize pdf', 'pdf summary', 'pdf analysis', 'pdf processing']
+    if any(word in lower_message for word in pdf_words):
         return "📄 **PDF Summarization**\n\nI can help you summarize PDF documents! 🚀\n\n• Upload any PDF (up to 50MB)\n• Handles large documents (30+ pages)\n• Extracts and formats table data\n• Powered by advanced processing for superior accuracy\n\nSimply switch to PDF Summarization mode and drag & drop or click to upload your PDF!"
     
-    else:
-        return "💭 I understand you're asking about: \"" + message + "\"\n\nI can help you with:\n💬 **HR Q&A Chat** - Ask about company policies and procedures\n📄 **PDF Summarization** - Upload any PDF for comprehensive analysis\n📜 **Document Requests** - Request official documents through chat\n\n💡 **Quick Start:**\n• Switch to HR Q&A mode to ask questions\n• Upload a PDF file above for summarization\n• Type \"I need a document\" to request official documents\n• Use the mode buttons to switch between services\n• Search for employees: \"search employee [name or ID]\"\n\n⚠️ **Important:** Document generation requires ALL employee details to match our records exactly.\n\nHow would you like to proceed?"
+    # Enhanced leave/policy detection
+    leave_words = ['leave', 'policy', 'policies', 'attendance', 'absent', 'present', 'holiday', 'vacation', 'sick', 'medical', 'casual', 'annual', 'maternity', 'paternity', 'bereavement', 'compensatory', 'work from home', 'wfh', 'remote', 'hybrid']
+    if any(word in lower_message for word in leave_words):
+        return "📋 **Leave & Attendance Policies**\n\nI can help you with leave and attendance information:\n\n• **Leave Types:** Casual, Sick, Annual, Maternity, Paternity\n• **Attendance Policy:** Regular attendance requirements\n• **Work from Home:** WFH policies and procedures\n• **Holiday Calendar:** Company holidays and off days\n\nPlease ask specific questions about leave policies, and I'll provide detailed information!"
+    
+    # Enhanced benefits detection
+    benefits_words = ['benefit', 'benefits', 'insurance', 'medical', 'health', 'dental', 'vision', 'pf', 'provident fund', 'gratuity', 'bonus', 'incentive', 'allowance', 'perks', 'facility', 'facilities']
+    if any(word in lower_message for word in benefits_words):
+        return "🏥 **Employee Benefits**\n\nI can help you with information about employee benefits:\n\n• **Medical Insurance:** Health coverage details\n• **Provident Fund:** PF contribution and withdrawal\n• **Gratuity:** Gratuity calculation and eligibility\n• **Other Benefits:** Allowances, bonuses, incentives\n\nPlease ask specific questions about benefits, and I'll provide detailed information!"
+    
+    # Default response
+    return "💭 I understand you're asking about: \"" + message + "\"\n\nI can help you with:\n💬 **HR Q&A Chat** - Ask about company policies and procedures\n📄 **PDF Summarization** - Upload any PDF for comprehensive analysis\n📜 **Document Requests** - Request official documents through chat\n\n💡 **Quick Start:**\n• Switch to HR Q&A mode to ask questions\n• Upload a PDF file above for summarization\n• Type \"I need a document\" to request official documents\n• Use the mode buttons to switch between services\n• Search for employees: \"search employee [name or ID]\"\n\n⚠️ **Important:** Document generation requires ALL employee details to match our records exactly.\n\nHow would you like to proceed?"
 
 
 @router.post("/", response_model=ChatResponse)
