@@ -1015,3 +1015,21 @@ User: anonymous
 Details: {"employeeName":"Johnathan Farley","employeeId":"EMP0015","designation":"Software Engineer","department":"Sales","joiningDate":"2024-06-13","relievingDate":"2025-08-15","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
 Status: completed
 =====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-15 16:42:23
+Request ID: DOC_20250815_164223
+Document: ID Card Replacement
+User: anonymous
+Details: {"employeeName":"Khushbu Arun Jain","employeeId":"EMP0003","designation":"HR Specialist","department":"Human Resources","joiningDate":"2023-06-28","relievingDate":"","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"lost","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-15 16:44:28
+Request ID: DOC_20250815_164428
+Document: PF Statement / UAN details
+User: anonymous
+Details: {"employeeName":"Ashwini Anil Nikumbh","employeeId":"EMP0002","designation":"Account Executive","department":"Finance","joiningDate":"2022-03-15","relievingDate":"","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================

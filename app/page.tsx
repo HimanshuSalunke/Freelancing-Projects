@@ -347,7 +347,7 @@ export default function Home() {
             Advanced AI-Powered Document Processing & HR Q&A System
           </p>
           <p className="text-gray-500 text-sm mt-2">
-            © 2024 Reliance Jio Infotech Solutions. All rights reserved.
+            © 2025 Reliance Jio Infotech Solutions. All rights reserved.
           </p>
         </div>
       </footer>

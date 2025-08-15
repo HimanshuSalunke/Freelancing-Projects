@@ -221,8 +221,8 @@ export default function LoginPage() {
           >
             <Lock className="w-8 h-8 text-white" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to access the Org AI Chatbot</p>
+                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+           <p className="text-gray-600">Sign in to access Reliance Jio Infotech Solutions</p>
         </div>
 
         {/* Login Form */}
@@ -383,9 +383,9 @@ export default function LoginPage() {
           transition={{ delay: 0.5 }}
           className="text-center mt-6"
         >
-          <p className="text-sm text-gray-500">
-            © 2024 Org AI Chatbot. All rights reserved.
-          </p>
+                     <p className="text-sm text-gray-500">
+             © 2025 Reliance Jio Infotech Solutions. All rights reserved.
+           </p>
         </motion.div>
       </motion.div>
     </div>
