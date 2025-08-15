@@ -997,3 +997,21 @@ User: anonymous
 Details: {"employeeName":"Devyani Suresh Deore","employeeId":"EMP0001","designation":"Brand Manager","department":"Marketing","joiningDate":"2021-11-02","relievingDate":"2025-08-15","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
 Status: completed
 =====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-15 13:32:04
+Request ID: DOC_20250815_133204
+Document: Offer Letter Copy
+User: anonymous
+Details: {"employeeName":"Khushbu Arun Jain","employeeId":"EMP0003","designation":"HR Specialist","department":"Human Resources","joiningDate":"2023-06-28","relievingDate":"","salaryAmount":"5000","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-08-15 13:42:05
+Request ID: DOC_20250815_134205
+Document: Experience Certificate
+User: anonymous
+Details: {"employeeName":"Johnathan Farley","employeeId":"EMP0015","designation":"Software Engineer","department":"Sales","joiningDate":"2024-06-13","relievingDate":"2025-08-15","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
