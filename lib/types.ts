@@ -185,3 +185,11 @@ export interface SystemConfig {
   timeout_seconds: number
   retry_attempts: number
 }
+
+// Team Member Types
+export interface TeamMember {
+  name: string
+  role: string
+  department: string
+  skills: string[]
+}

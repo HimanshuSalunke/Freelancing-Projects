@@ -28,7 +28,7 @@ import ModeSelector from '@/components/ModeSelector'
 import Header from '@/components/Header'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { cn } from '@/lib/utils'
-import { Message, ChatSession } from '@/lib/types'
+import { Message, ChatSession, TeamMember } from '@/lib/types'
 
 export default function Home() {
   const router = useRouter()
@@ -193,6 +193,33 @@ export default function Home() {
     }
   ]
 
+  const teamMembers: TeamMember[] = [
+    {
+      name: "Devyani Suresh Deore",
+      role: "Brand Manager",
+      department: "Marketing",
+      skills: ["Frontend", "UI/UX", "Project Management"]
+    },
+    {
+      name: "Ashwini Anil Nikumbh",
+      role: "Account Executive", 
+      department: "Finance",
+      skills: ["Backend", "Database", "API Development"]
+    },
+    {
+      name: "Khushbu Arun Jain",
+      role: "HR Specialist",
+      department: "Human Resources", 
+      skills: ["AI Integration", "Business Logic", "Testing"]
+    },
+    {
+      name: "Mansi Anil Badgujar",
+      role: "Software Engineer",
+      department: "IT",
+      skills: ["Full Stack", "DevOps", "System Architecture"]
+    }
+  ]
+
   // Don't render until client-side hydration and authentication are complete
   if (!isClient || isLoading) {
     return (
@@ -335,6 +362,73 @@ export default function Home() {
           </motion.div>
         </ErrorBoundary>
       </main>
+
+      {/* Team Section */}
+      <section className="bg-gradient-to-r from-blue-50 to-purple-50 py-16 mt-16">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Meet Our Development Team
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              This AI-powered HR Assistant was built by talented students as their college major project. 
+              Each team member contributed their expertise to create this innovative solution.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {teamMembers.map((member: TeamMember, index: number) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 text-center group"
+              >
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold group-hover:scale-110 transition-transform duration-300">
+                  {member.name.split(' ').map((n: string) => n[0]).join('')}
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{member.name}</h3>
+                <p className="text-blue-600 font-medium mb-1">{member.role}</p>
+                <p className="text-gray-600 text-sm mb-3">{member.department}</p>
+                <div className="flex justify-center space-x-2">
+                  {member.skills.map((skill: string, skillIndex: number) => (
+                    <span
+                      key={skillIndex}
+                      className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="text-center mt-12"
+          >
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-full">
+              <Sparkles className="w-5 h-5" />
+              <span className="font-semibold">College Major Project</span>
+            </div>
+            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+              This project demonstrates the power of modern web technologies, AI integration, 
+              and collaborative development in creating real-world solutions for enterprise needs.
+            </p>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 mt-16">
