@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Bot, Sparkles, Shield, LogOut, User, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { createPortal } from 'react-dom'
 
 interface UserInfo {
   emp_id: number
@@ -46,6 +47,55 @@ export default function Header() {
 
     fetchUserInfo()
   }, [router])
+
+  // Handle keyboard events to close dropdown
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showUserMenu) {
+        setShowUserMenu(false)
+      }
+    }
+
+    if (showUserMenu) {
+      document.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showUserMenu])
+
+  // Handle global click events to close dropdown
+  useEffect(() => {
+    const handleGlobalClick = (event: MouseEvent) => {
+      if (showUserMenu) {
+        // Check if click is outside the user menu container
+        const userMenuContainer = document.querySelector('[data-user-menu]')
+        if (userMenuContainer && !userMenuContainer.contains(event.target as Node)) {
+          console.log('🔍 Header - Global click outside detected, closing dropdown')
+          setShowUserMenu(false)
+        }
+      }
+    }
+
+    if (showUserMenu) {
+      document.addEventListener('click', handleGlobalClick)
+    }
+
+    return () => {
+      document.removeEventListener('click', handleGlobalClick)
+    }
+  }, [showUserMenu])
+
+  // Cleanup effect for portal
+  useEffect(() => {
+    return () => {
+      // Ensure dropdown is closed when component unmounts
+      if (showUserMenu) {
+        setShowUserMenu(false)
+      }
+    }
+  }, [showUserMenu])
 
   const handleLogout = async () => {
     try {
@@ -153,9 +203,12 @@ export default function Header() {
 
           {/* User Menu */}
           {user && (
-            <div className="relative">
+            <div className="relative" data-user-menu>
               <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowUserMenu(!showUserMenu)
+                }}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
               >
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -170,25 +223,53 @@ export default function Header() {
 
               {/* Dropdown Menu */}
               {showUserMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
-                >
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">{user.full_name}</p>
-                    <p className="text-xs text-gray-600">{user.email}</p>
-                    <p className="text-xs text-gray-500">{user.department} • {user.designation}</p>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                <>
+                  {/* Click outside overlay using portal */}
+                  {typeof window !== 'undefined' && createPortal(
+                    <div 
+                      className="fixed inset-0 z-40 bg-transparent" 
+                      onClick={() => {
+                        console.log('🔍 Header - Portal overlay clicked, closing dropdown')
+                        setShowUserMenu(false)
+                      }}
+                      style={{ 
+                        top: 0, 
+                        left: 0, 
+                        right: 0, 
+                        bottom: 0,
+                        width: '100vw',
+                        height: '100vh'
+                      }}
+                    />,
+                    document.body
+                  )}
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      console.log('🔍 Header - Dropdown clicked, keeping open')
+                    }}
                   >
-                    <LogOut className="w-4 h-4" />
-                    Logout
-                  </button>
-                </motion.div>
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{user.full_name}</p>
+                      <p className="text-xs text-gray-600">{user.email}</p>
+                      <p className="text-xs text-gray-500">{user.department} • {user.designation}</p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleLogout()
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </motion.div>
+                </>
               )}
             </div>
           )}
@@ -203,14 +284,6 @@ export default function Header() {
           </div>
         </div>
       </div>
-
-      {/* Click outside to close dropdown */}
-      {showUserMenu && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setShowUserMenu(false)}
-        />
-      )}
     </motion.header>
   )
 }

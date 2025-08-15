@@ -187,6 +187,22 @@ export default function LoginPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Handle Enter key for email input
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && email && !isLoading) {
+      e.preventDefault()
+      handleSendOtp()
+    }
+  }
+
+  // Handle Enter key for OTP input
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && otp && otp.length === 6 && !isLoading) {
+      e.preventDefault()
+      handleVerifyOtp()
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
       <motion.div
@@ -218,7 +234,12 @@ export default function LoginPage() {
         >
           {!isOtpSent ? (
             // Email Input Step
-            <div className="space-y-6">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              if (email && !isLoading) {
+                handleSendOtp()
+              }
+            }} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address
@@ -230,9 +251,11 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleEmailKeyDown}
                     placeholder="Enter your email address"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     disabled={isLoading}
+                    required
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
@@ -241,7 +264,7 @@ export default function LoginPage() {
               </div>
 
               <button
-                onClick={handleSendOtp}
+                type="submit"
                 disabled={isLoading || !email}
                 className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -251,13 +274,21 @@ export default function LoginPage() {
                     Sending OTP...
                   </div>
                 ) : (
-                  'Send OTP'
+                  <div className="flex items-center justify-center">
+                    <span>Send OTP</span>
+                    <span className="ml-2 text-xs opacity-75">(or press Enter)</span>
+                  </div>
                 )}
               </button>
-            </div>
+            </form>
           ) : (
             // OTP Verification Step
-            <div className="space-y-6">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              if (otp && otp.length === 6 && !isLoading) {
+                handleVerifyOtp()
+              }
+            }} className="space-y-6">
               <div className="text-center">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Mail className="w-6 h-6 text-green-600" />
@@ -284,10 +315,12 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
+                    onKeyDown={handleOtpKeyDown}
                     placeholder="Enter 6-digit OTP"
                     maxLength={6}
                     className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg tracking-widest"
                     disabled={isLoading}
+                    required
                   />
                   <button
                     type="button"
@@ -301,7 +334,7 @@ export default function LoginPage() {
 
               <div className="space-y-3">
                 <button
-                  onClick={handleVerifyOtp}
+                  type="submit"
                   disabled={isLoading || !otp || otp.length !== 6}
                   className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -311,11 +344,15 @@ export default function LoginPage() {
                       Verifying...
                     </div>
                   ) : (
-                    'Verify OTP'
+                    <div className="flex items-center justify-center">
+                      <span>Verify OTP</span>
+                      <span className="ml-2 text-xs opacity-75">(or press Enter)</span>
+                    </div>
                   )}
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => setIsOtpSent(false)}
                   className="w-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors duration-200"
                 >
@@ -325,6 +362,7 @@ export default function LoginPage() {
 
                 {countdown === 0 && (
                   <button
+                    type="button"
                     onClick={handleResendOtp}
                     disabled={isLoading}
                     className="w-full flex items-center justify-center text-blue-600 hover:text-blue-700 transition-colors duration-200 disabled:opacity-50"
@@ -334,7 +372,7 @@ export default function LoginPage() {
                   </button>
                 )}
               </div>
-            </div>
+            </form>
           )}
         </motion.div>
 
