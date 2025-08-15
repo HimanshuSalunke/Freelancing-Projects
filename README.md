@@ -44,7 +44,7 @@ An advanced AI-powered HR assistant chatbot built as a college major project by 
 - **Authentication**: Middleware-based route protection
 
 ### Backend (FastAPI)
-- **Framework**: FastAPI with Python 3.8+
+- **Framework**: FastAPI with Python 3.12.0
 - **AI Integration**: Google Gemini 2.0 Flash Exp
 - **Semantic Search**: Sentence Transformers with local embeddings
 - **Document Processing**: PyMuPDF, PDFPlumber, OpenCV, ReportLab
@@ -200,7 +200,7 @@ chatbot_project/
 
 ### Prerequisites
 - Node.js 18+ and npm
-- Python 3.8+
+- Python 3.12.0
 - Google Gemini API key
 - Git
 
