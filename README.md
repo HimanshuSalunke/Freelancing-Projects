@@ -237,13 +237,33 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Environment Variables
-```bash
-# Frontend (.env.local)
-NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 
-# Backend (.env)
-GOOGLE_GEMINI_API_KEY=your-gemini-api-key
+#### Frontend (.env.local)
+```bash
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+NODE_ENV=development
+```
+
+#### Backend (.env)
+```bash
+# Google Gemini AI Configuration
+GOOGLE_GEMINI_API_KEY=your-gemini-api-key-here
+
+# Email Configuration (for OTP)
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+
+# JWT Security
+JWT_SECRET=your-jwt-secret-key-change-in-production
+
+# Backend Configuration
+BACKEND_URL=http://localhost:8000
+NODE_ENV=development
+
+# MongoDB Atlas Configuration
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/hr_assistant?retryWrites=true&w=majority
+
+# Optional Configuration
 DISABLE_AUTH=false
 ORG_NAME="Reliance Jio Infotech Solutions"
 ```
