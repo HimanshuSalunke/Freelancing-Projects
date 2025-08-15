@@ -16,7 +16,7 @@ else:
     load_dotenv()
     print("⚠️ Using fallback environment loading")
 
-from .routers import chat, documents, certificates, health, gemini_documents, advanced_qa, document_requests
+from .routers import chat, documents, certificates, health, gemini_documents, advanced_qa, document_requests, auth
 
 app = FastAPI(title="Org AI Chatbot", version="0.1.0")
 
@@ -34,6 +34,7 @@ app.add_middleware(
 # app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
 app.include_router(health.router)
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
 app.include_router(certificates.router, prefix="/certificates", tags=["certificates"])

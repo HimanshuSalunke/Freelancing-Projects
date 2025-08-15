@@ -1,9 +1,112 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Bot, Sparkles, Shield } from 'lucide-react'
+import { Bot, Sparkles, Shield, LogOut, User, ChevronDown } from 'lucide-react'
+import toast from 'react-hot-toast'
+
+interface UserInfo {
+  emp_id: number
+  full_name: string
+  email: string
+  designation: string
+  department: string
+}
 
 export default function Header() {
+  const router = useRouter()
+  const [user, setUser] = useState<UserInfo | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include'
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setUser(data.user)
+        } else {
+          // Don't redirect here - let the main page handle authentication
+          // Just set user to null and let the main page redirect
+          setUser(null)
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error)
+        // Don't redirect here - let the main page handle authentication
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUserInfo()
+  }, [router])
+
+  const handleLogout = async () => {
+    try {
+      console.log('🔍 Header - Starting logout process...')
+      
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        console.log('✅ Header - Logout successful')
+        toast.success('Logged out successfully')
+        // Clear user state immediately
+        setUser(null)
+        // Add a small delay to ensure logout completes, then redirect to login page
+        console.log('✅ Header - Logout complete, redirecting to login...')
+        setTimeout(() => {
+          // Use hard redirect to ensure it works
+          window.location.href = '/login'
+        }, 500)
+      } else {
+        console.log('❌ Header - Logout failed')
+        toast.error('Failed to logout')
+      }
+    } catch (error) {
+      console.error('❌ Header - Error during logout:', error)
+      toast.error('Network error during logout')
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <motion.header 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50"
+      >
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  Reliance Jio Infotech Solutions
+                </h1>
+                <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  AI-Powered HR Assistant
+                </p>
+              </div>
+            </div>
+            <div className="animate-pulse bg-gray-200 h-8 w-32 rounded"></div>
+          </div>
+        </div>
+      </motion.header>
+    )
+  }
+
   return (
     <motion.header 
       initial={{ opacity: 0, y: -20 }}
@@ -48,7 +151,47 @@ export default function Header() {
             </div>
           </motion.div>
 
+          {/* User Menu */}
+          {user && (
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-sm font-medium text-gray-900">{user.full_name}</p>
+                  <p className="text-xs text-gray-600">{user.designation}</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+              </button>
 
+              {/* Dropdown Menu */}
+              {showUserMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                >
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900">{user.full_name}</p>
+                    <p className="text-xs text-gray-600">{user.email}</p>
+                    <p className="text-xs text-gray-500">{user.department} • {user.designation}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </motion.div>
+              )}
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
@@ -60,6 +203,14 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* Click outside to close dropdown */}
+      {showUserMenu && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setShowUserMenu(false)}
+        />
+      )}
     </motion.header>
   )
 }

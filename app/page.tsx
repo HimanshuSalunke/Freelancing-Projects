@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Send, 
@@ -30,9 +31,13 @@ import { cn } from '@/lib/utils'
 import { Message, ChatSession } from '@/lib/types'
 
 export default function Home() {
+  const router = useRouter()
   const [currentMode, setCurrentMode] = useState<'chat' | 'pdf' | 'documents'>('chat')
   const [showFeatures, setShowFeatures] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasRedirected, setHasRedirected] = useState(false)
   const mainContainerRef = useRef<HTMLDivElement>(null)
   const interfaceSectionRef = useRef<HTMLDivElement>(null)
 
@@ -40,6 +45,75 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<Message[]>([])
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string>('')
+
+  // Handle authentication check
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        console.log('🔍 Main page - Checking authentication...')
+        console.log('🔍 Main page - Current URL:', window.location.href)
+        
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include'
+        })
+        
+        console.log('🔍 Main page - Auth response status:', response.status)
+        
+        if (response.ok) {
+          const data = await response.json()
+          console.log('✅ Main page - Authentication successful:', data)
+          setIsAuthenticated(true)
+          // Reset redirect flag when authentication is successful
+          setHasRedirected(false)
+        } else {
+          const data = await response.json()
+          console.log('❌ Main page - Authentication failed:', data)
+          
+          // If we were previously authenticated but now we're not, this is likely a logout
+          if (isAuthenticated) {
+            console.log('🔄 Main page - Logout detected, redirecting to login...')
+            setIsAuthenticated(false)
+            setHasRedirected(false)
+            // Force a redirect to login
+            router.push('/login')
+            return
+          }
+          
+          // Only redirect if we haven't already and we're not already on login page
+          if (!hasRedirected && window.location.pathname !== '/login') {
+            console.log('❌ Main page - Redirecting to login...')
+            setHasRedirected(true)
+            router.push('/login')
+            return
+          }
+        }
+      } catch (error) {
+        console.error('❌ Main page - Error checking authentication:', error)
+        
+        // If we were previously authenticated but now we're not, this is likely a logout
+        if (isAuthenticated) {
+          console.log('🔄 Main page - Logout detected (error), redirecting to login...')
+          setIsAuthenticated(false)
+          setHasRedirected(false)
+          // Force a redirect to login
+          router.push('/login')
+          return
+        }
+        
+        // Only redirect if we haven't already and we're not already on login page
+        if (!hasRedirected && window.location.pathname !== '/login') {
+          console.log('❌ Main page - Redirecting to login due to error...')
+          setHasRedirected(true)
+          router.push('/login')
+          return
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [router, hasRedirected, isAuthenticated])
 
   // Handle hydration and ensure page starts at top
   useEffect(() => {
@@ -119,16 +193,21 @@ export default function Home() {
     }
   ]
 
-  // Don't render until client-side hydration is complete
-  if (!isClient) {
+  // Don't render until client-side hydration and authentication are complete
+  if (!isClient || isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Initializing...</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     )
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated && hasRedirected) {
+    return null
   }
 
   return (
