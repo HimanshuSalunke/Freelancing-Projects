@@ -1,4 +1,4 @@
-# Reliance Jio Infotech Solutions - AI-Powered HR Assistant
+# Reliance Jio Infotech Solutions - AI-Powered HR Assistant.
 
 ## 🚀 Project Overview
 
