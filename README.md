@@ -250,17 +250,7 @@ Jio-Chatbot/
 
 ---
 
-## 🔗 **Additional Portfolio Projects**
 
-Visit my [Freelancing Projects repository](https://github.com/HRS0221/Freelancing-Projects) for more examples of my work, including:
-
-- **Computer Vision Projects**: Vehicle registration plate detection, facial analysis
-- **NLP & Sentiment Analysis**: BERT-based sentiment analysis models
-- **Data Analytics**: YouTube data analysis with AWS services
-- **Machine Learning**: Predictive models and classification systems
-- **Cloud Solutions**: AWS-based ETL pipelines and analytics
-
----
 
 ## 📄 **License & Usage**
 
