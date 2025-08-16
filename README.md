@@ -214,8 +214,6 @@ Jio-Chatbot/
 
 ### **Professional Information**
 - **Email**: contact.himanshusalunke@gmail.com
-- **Phone**: +91-9860553332
-- **Location**: Dhule, Maharashtra, India
 - **LinkedIn**: [Himanshu Salunke](https://www.linkedin.com/in/hr0221/)
 - **GitHub**: [HRS0221](https://github.com/HRS0221)
 - **Portfolio**: [Freelancing Projects](https://github.com/HRS0221/Freelancing-Projects)
