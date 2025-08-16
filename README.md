@@ -55,6 +55,7 @@ An advanced AI-powered HR assistant chatbot built as a college major project by 
 - **Document Analysis**: Intelligent PDF structure analysis
 - **Employee Validation**: Fuzzy matching and data verification
 - **Content Filtering**: Bad language detection and moderation
+- **Model Management**: AI models automatically downloaded on first run (not stored in Git)
 
 ## 🛠️ Technology Stack
 
@@ -235,6 +236,8 @@ export GOOGLE_GEMINI_API_KEY="your-api-key-here"
 # Start FastAPI server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+**Note**: AI models (Sentence Transformers) will be automatically downloaded on first run (~100MB). This may take a few minutes depending on your internet connection.
 
 ### Environment Variables
 
@@ -481,6 +484,7 @@ GOOGLE_GEMINI_API_KEY=your-production-api-key
 2. **PDF Upload Failures**: Verify file size and format
 3. **Authentication Issues**: Clear browser cache and cookies
 4. **AI Response Delays**: Check Gemini API quota
+5. **Model Download Issues**: Ensure stable internet connection for first-time model downloads
 
 ### Debug Mode
 ```bash
