@@ -4,6 +4,23 @@
 
 An advanced AI-powered HR assistant chatbot built as a college major project by a team of talented students. This comprehensive solution combines modern web technologies with cutting-edge AI to provide intelligent HR support, document processing, and certificate generation for Reliance Jio Infotech Solutions.
 
+## 📸 Screenshots
+
+### Login Page
+![Login Page](./Project%20Images/Login_Page.png)
+
+*Secure OTP-based authentication system with email verification for enhanced security.*
+
+### OTP Verification Page
+![OTP Page](./Project%20Images/Otp_Page.png)
+
+*One-time password verification interface ensuring secure access to the HR assistant system.*
+
+### Home Page
+![Home Page](./Project%20Images/Home_Page.png)
+
+*The main interface of the AI-powered HR Assistant showing the chat interface and document processing capabilities.*
+
 ## ✨ Key Features
 
 ### 🤖 **HR Q&A Chat System**
