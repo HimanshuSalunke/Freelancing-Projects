@@ -168,6 +168,12 @@ logs/
 *.flac
 *.aac
 
+# Allow project documentation images
+!Project Images/
+!Project Images/*.png
+!Project Images/*.jpg
+!Project Images/*.jpeg
+
 # Archives
 *.zip
 *.tar
