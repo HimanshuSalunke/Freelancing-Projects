@@ -2,8 +2,8 @@
 
 ## 👨‍💻 Professional Freelancer Profile
 
-**HRS0221** - Full Stack Developer & AI Solutions Specialist  
-*Transforming businesses through innovative AI-powered applications*
+**Himanshu Kishor Salunke** - Data Science Specialist & AI Solutions Developer  
+*Transforming businesses through innovative AI-powered applications and data-driven insights*
 
 ---
 
@@ -21,32 +21,33 @@ A comprehensive AI-powered HR assistant chatbot developed for **Reliance Jio Inf
 
 ## 🛠️ **Technical Expertise Demonstrated**
 
-### **Frontend Development**
-- **Next.js 14** with React 18 and TypeScript
-- **Tailwind CSS** for modern, responsive design
-- **Framer Motion** for smooth animations
-- **Advanced state management** with React hooks
-- **Authentication middleware** and route protection
+### **Data Science & Machine Learning**
+- **Computer Vision & Image Processing** with YOLO, OpenCV
+- **Deep Learning** using TensorFlow, PyTorch, Keras
+- **Natural Language Processing** with BERT, NLTK
+- **Machine Learning** with scikit-learn and custom algorithms
+- **Data Analysis** and statistical modeling
 
-### **Backend Development**
-- **FastAPI** with Python 3.12.0
-- **RESTful API design** with comprehensive endpoints
-- **Database integration** (MongoDB Atlas + local JSON)
-- **File processing** and document management
-- **Security implementation** with JWT and OTP
+### **Cloud & AWS Technologies**
+- **AWS Services**: Lambda, S3, Glue, Athena, QuickSight
+- **ETL Pipeline Development** with AWS Glue and Lambda
+- **Data Warehousing** and analytics solutions
+- **Serverless Architecture** and cloud deployment
+- **Docker** containerization and orchestration
 
-### **AI/ML Integration**
-- **Google Gemini 2.0 Flash Exp** for intelligent responses
-- **Sentence Transformers** for semantic search
-- **Hybrid QA engine** combining search and generative AI
-- **PDF processing** with advanced table extraction
-- **Content filtering** and moderation systems
+### **Data Visualization & BI**
+- **Tableau** for interactive dashboards and analytics
+- **PowerBI** for business intelligence solutions
+- **AWS QuickSight** for cloud-based analytics
+- **Data Storytelling** and insights presentation
+- **Real-time analytics** and reporting
 
-### **DevOps & Deployment**
-- **Docker containerization** ready
-- **Environment management** with .env files
-- **API documentation** with FastAPI auto-generation
-- **Performance optimization** and caching strategies
+### **Programming & Development**
+- **Python** for data science and machine learning
+- **SQL** for database management and queries
+- **Java, C, C++** for software development
+- **Web Technologies**: HTML, CSS for frontend
+- **Flask** for web application development
 
 ---
 
@@ -105,11 +106,12 @@ A comprehensive AI-powered HR assistant chatbot developed for **Reliance Jio Inf
 
 ### **Modern Tech Stack**
 ```
-Frontend: Next.js 14 + React 18 + TypeScript + Tailwind CSS
-Backend: FastAPI + Python 3.12 + MongoDB Atlas
-AI/ML: Google Gemini 2.0 + Sentence Transformers
-Security: JWT + OTP + Content Filtering
-Deployment: Docker-ready + Environment Management
+Data Science: Python + TensorFlow + PyTorch + scikit-learn
+Computer Vision: YOLO + OpenCV + Image Processing
+NLP: BERT + NLTK + Sentiment Analysis
+Cloud: AWS Lambda + S3 + Glue + Athena + QuickSight
+Visualization: Tableau + PowerBI + AWS QuickSight
+Programming: Python + SQL + Java + C++ + Flask
 ```
 
 ### **Scalable Design Patterns**
@@ -126,18 +128,18 @@ Deployment: Docker-ready + Environment Management
 ### **Why This Project Stands Out**
 1. **Complete Development**: Built entire system from scratch for college project
 2. **AI Integration**: Cutting-edge AI/ML technologies in production
-3. **Full-Stack Expertise**: Complete frontend and backend development
-4. **Security Focus**: Enterprise-level security implementation
-5. **Scalable Architecture**: Designed for growth and maintenance
+3. **Data Science Expertise**: Computer Vision, NLP, and Machine Learning
+4. **Cloud Integration**: AWS services and scalable architecture
+5. **Professional Quality**: Enterprise-level solution for educational purposes
 
 ### **Skills Demonstrated**
-- ✅ **Full Stack Development** (Frontend + Backend)
-- ✅ **AI/ML Integration** and model management
-- ✅ **Database Design** and optimization
-- ✅ **API Development** and documentation
-- ✅ **Security Implementation** and best practices
-- ✅ **DevOps** and deployment strategies
-- ✅ **Client Communication** and project delivery
+- ✅ **Data Science & Machine Learning** (Computer Vision, NLP, Deep Learning)
+- ✅ **Cloud & AWS Technologies** (Lambda, S3, Glue, Athena, QuickSight)
+- ✅ **Data Visualization & BI** (Tableau, PowerBI, QuickSight)
+- ✅ **Programming & Development** (Python, SQL, Java, C++)
+- ✅ **ETL Pipeline Development** and data processing
+- ✅ **Project Management** and client communication
+- ✅ **Technical Leadership** and team coordination
 
 ---
 
@@ -182,43 +184,45 @@ Jio-Chatbot/
 
 ## 💼 **Freelancing Services Offered**
 
-### **Full Stack Development**
-- **Frontend**: React, Next.js, TypeScript, Tailwind CSS
-- **Backend**: FastAPI, Python, Node.js, Express
-- **Database**: MongoDB, PostgreSQL, MySQL
-- **APIs**: RESTful, GraphQL, WebSocket
+### **Data Science & Machine Learning**
+- **Computer Vision**: Object detection, image processing, YOLO models
+- **Natural Language Processing**: Sentiment analysis, text classification, BERT models
+- **Machine Learning**: Predictive modeling, classification, regression
+- **Deep Learning**: Neural networks, custom model development
 
-### **AI/ML Integration**
-- **Chatbots**: Custom AI assistants and support systems
-- **Document Processing**: PDF analysis, OCR, summarization
-- **Natural Language Processing**: Text analysis, sentiment detection
-- **Machine Learning**: Custom models and data analysis
+### **Data Analytics & Visualization**
+- **Data Analysis**: Statistical analysis, exploratory data analysis
+- **Business Intelligence**: Tableau, PowerBI dashboards and reports
+- **AWS Analytics**: QuickSight, Athena, Glue ETL pipelines
+- **Data Storytelling**: Insights presentation and recommendations
 
-### **Enterprise Solutions**
-- **HR Systems**: Employee management, document generation
-- **E-commerce**: Online stores, payment integration
-- **CRM Systems**: Customer relationship management
-- **Analytics Dashboards**: Data visualization and reporting
+### **Cloud & AWS Solutions**
+- **ETL Pipeline Development**: AWS Glue, Lambda, S3 integration
+- **Data Warehousing**: Cloud-based data storage and management
+- **Serverless Applications**: AWS Lambda and cloud-native solutions
+- **Data Processing**: Scalable data transformation and analytics
 
-### **DevOps & Deployment**
-- **Cloud Deployment**: AWS, Azure, Google Cloud
-- **CI/CD Pipelines**: Automated testing and deployment
-- **Docker & Kubernetes**: Containerization and orchestration
-- **Monitoring**: Performance tracking and alerting
+### **Software Development**
+- **Python Applications**: Data science tools and automation
+- **Web Development**: Flask-based applications and APIs
+- **Database Solutions**: SQL optimization and data management
+- **Custom Solutions**: Tailored applications for specific needs
 
 ---
 
 ## 📞 **Contact & Availability**
 
 ### **Professional Information**
+- **Email**: himanshu.rcpit@gmail.com
+- **Phone**: +91-9860553332
+- **Location**: Dhule, Maharashtra, India
+- **LinkedIn**: [Himanshu Salunke](https://linkedin.com/in/himanshu-salunke)
 - **GitHub**: [HRS0221](https://github.com/HRS0221)
 - **Portfolio**: [Freelancing Projects](https://github.com/HRS0221/Freelancing-Projects)
-- **Availability**: Available for new projects
-- **Response Time**: Within 24 hours
 
 ### **Project Inquiries**
 - **Hourly Rate**: Competitive market rates
-- **Project Types**: Full-stack, AI integration, enterprise solutions
+- **Project Types**: Data Science, Machine Learning, Computer Vision, AWS Solutions
 - **Timeline**: Flexible based on project requirements
 - **Communication**: Regular updates and transparent progress tracking
 
@@ -226,7 +230,7 @@ Jio-Chatbot/
 
 ## 🏆 **Client Testimonials**
 
-> *"HRS0221 developed our entire college project from scratch and delivered an exceptional AI-powered HR assistant that exceeded our expectations. The system handles complex document processing and provides intelligent responses. Highly recommended for college projects and freelancing work."*
+> *"Himanshu developed our entire college project from scratch and delivered an exceptional AI-powered HR assistant that exceeded our expectations. His expertise in data science and machine learning was evident throughout the development process. Highly recommended for data science projects and freelancing work."*
 > 
 > **- College Student Team**
 
@@ -252,11 +256,11 @@ Jio-Chatbot/
 
 Visit my [Freelancing Projects repository](https://github.com/HRS0221/Freelancing-Projects) for more examples of my work, including:
 
-- **E-commerce platforms** with payment integration
-- **Real-time chat applications** with WebSocket
-- **Data analytics dashboards** with visualization
-- **Mobile-responsive web applications**
-- **API development** and integration projects
+- **Computer Vision Projects**: Vehicle registration plate detection, facial analysis
+- **NLP & Sentiment Analysis**: BERT-based sentiment analysis models
+- **Data Analytics**: YouTube data analysis with AWS services
+- **Machine Learning**: Predictive models and classification systems
+- **Cloud Solutions**: AWS-based ETL pipelines and analytics
 
 ---
 
@@ -264,8 +268,8 @@ Visit my [Freelancing Projects repository](https://github.com/HRS0221/Freelancin
 
 This project was developed as a freelancing assignment for college students. The code demonstrates enterprise-level development practices and serves as a portfolio piece showcasing full-stack development capabilities for educational and commercial projects.
 
-**Built with ❤️ by HRS0221**  
-*Full Stack Developer & AI Solutions Specialist*
+**Built with ❤️ by Himanshu Kishor Salunke**  
+*Data Science Specialist & AI Solutions Developer*
 
 ---
 
