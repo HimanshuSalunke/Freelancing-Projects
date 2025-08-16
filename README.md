@@ -14,7 +14,7 @@ A comprehensive AI-powered HR assistant chatbot developed for **Reliance Jio Inf
 
 ### 💼 **Client: College Student Team**
 - **Project Type**: College Major Project - AI-Powered HR Assistant
-- **Timeline**: 3 months
+- **Timeline**: 4 days
 - **Company**: Reliance Jio Infotech Solutions (fictional company name used for project)
 
 ---
