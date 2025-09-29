@@ -214,9 +214,9 @@ Jio-Chatbot/
 
 ### **Professional Information**
 - **Email**: contact.himanshusalunke@gmail.com
-- **LinkedIn**: [Himanshu Salunke](https://www.linkedin.com/in/hr0221/)
-- **GitHub**: [HRS0221](https://github.com/HRS0221)
-- **Portfolio**: [Freelancing Projects](https://github.com/HRS0221/Freelancing-Projects)
+- **LinkedIn**: [Himanshu Salunke](https://www.linkedin.com/in/himanshuksalunke/)
+- **GitHub**: [HimanshuSalunke](https://github.com/HimanshuSalunke)
+- **Portfolio**: [Freelancing Projects](https://github.com/HimanshuSalunke/Freelancing-Projects)
 
 ### **Project Inquiries**
 - **Hourly Rate**: Competitive market rates
