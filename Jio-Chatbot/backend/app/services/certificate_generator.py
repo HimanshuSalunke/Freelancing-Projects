@@ -15,30 +15,51 @@ import base64
 from PIL import Image as PILImage
 import io
 
+# Import company configuration
+from ..config import get_company_config
+
 
 def get_company_logo():
-    """Generate a professional company logo using ReportLab"""
-    # Create a simple but professional logo using shapes and text
+    """Generate a professional company logo using ReportLab with configurable company name"""
     logo_data = io.BytesIO()
     c = canvas.Canvas(logo_data, pagesize=(2*inch, 1*inch))
+    
+    # Get company configuration
+    company_config = get_company_config()
+    company_name = company_config['name']
+    
+    # Split company name into words for better logo layout
+    words = company_name.split()
     
     # Draw logo background
     c.setFillColor(colors.HexColor('#1e40af'))
     c.rect(0, 0, 2*inch, 1*inch, fill=1)
     
-    # Add company name
+    # Add company name (adaptive based on length)
     c.setFillColor(colors.white)
-    c.setFont("Helvetica-Bold", 14)
-    c.drawCentredString(1*inch, 0.6*inch, "RELIANCE")
-    c.setFont("Helvetica-Bold", 12)
-    c.drawCentredString(1*inch, 0.4*inch, "JIO")
+    if len(words) == 1:
+        # Single word company name
+        c.setFont("Helvetica-Bold", 14)
+        c.drawCentredString(1*inch, 0.5*inch, words[0].upper())
+    elif len(words) == 2:
+        # Two word company name (e.g., "TechCorp Solutions")
+        c.setFont("Helvetica-Bold", 12)
+        c.drawCentredString(1*inch, 0.6*inch, words[0].upper())
+        c.setFont("Helvetica-Bold", 10)
+        c.drawCentredString(1*inch, 0.4*inch, words[1].upper())
+    else:
+        # Three or more words - show first two
+        c.setFont("Helvetica-Bold", 11)
+        c.drawCentredString(1*inch, 0.6*inch, words[0].upper())
+        c.setFont("Helvetica-Bold", 9)
+        c.drawCentredString(1*inch, 0.4*inch, words[1].upper())
     
     # Add tech icon
     c.setFillColor(colors.HexColor('#3b82f6'))
     c.circle(0.3*inch, 0.5*inch, 0.15*inch, fill=1)
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 8)
-    c.drawCentredString(0.3*inch, 0.5*inch, "AI")
+    c.drawCentredString(0.3*inch, 0.5*inch, "HR")
     
     c.save()
     logo_data.seek(0)
@@ -167,6 +188,9 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
     """Generate a professionally designed bonafide certificate with enhanced formatting"""
     buffer = BytesIO()
     
+    # Get company configuration
+    company_config = get_company_config()
+    
     # Use proper margins for professional documents (following template rules)
     doc = SimpleDocTemplate(
         buffer, 
@@ -225,7 +249,13 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
         canvas.setFont("Helvetica-Bold", 12)
         canvas.drawCentredString(1.35*inch, height-1.0*inch, "RELIANCE")
         canvas.setFont("Helvetica-Bold", 10)
-        canvas.drawCentredString(1.35*inch, height-1.15*inch, "JIO")
+        # Company name initials/acronym - dynamically determined from company name
+        words = company_name.split()
+        if len(words) >= 2:
+            acronym = ''.join([w[0] for w in words[:min(3, len(words))]])  # Max 3 letters
+        else:
+            acronym = company_name[:3].upper()  # First 3 letters of single word
+        canvas.drawCentredString(1.35*inch, height-1.15*inch, acronym.upper())
         canvas.setFillColor(colors.HexColor('#3b82f6'))
         canvas.circle(0.9*inch, height-1.05*inch, 0.1*inch, fill=1)
         canvas.setFillColor(colors.white)
@@ -246,11 +276,11 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
         canvas.circle(width-0.9*inch, 0.9*inch, 0.1*inch, fill=1)
         canvas.restoreState()
         
-        # Add subtle background watermark
+        # Add subtle background watermark with company name
         canvas.setFont("Helvetica", 60)
         canvas.setFillColor(colors.HexColor('#f8fafc'))
         canvas.rotate(45)
-        canvas.drawCentredString(width/2, height/2, "RELIANCE JIO")
+        canvas.drawCentredString(width/2, height/2, company_config['name'].upper())
         canvas.rotate(-45)
         
         # Add certificate badge in top-right corner
@@ -282,13 +312,19 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
                     canvas.rect(0.7*inch + i*0.08*inch, 0.7*inch + j*0.08*inch, 0.08*inch, 0.08*inch, fill=1)
         canvas.setFillColor(colors.HexColor('#1e40af'))
         canvas.setFont("Helvetica", 4)
-        canvas.drawCentredString(1.1*inch, 0.65*inch, f"RJI-{employee['employee_code']}")
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        canvas.drawCentredString(1.1*inch, 0.65*inch, f"{_prefix}-{employee['employee_code']}")
         canvas.restoreState()
         
         # Add certificate number watermark
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.HexColor('#e5e7eb'))
-        canvas.drawString(0.5*inch, 0.3*inch, f"Certificate ID: RJI-{employee['employee_code']}-{datetime.now().strftime('%Y%m%d')}")
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        canvas.drawString(0.5*inch, 0.3*inch, f"Certificate ID: {_prefix}-{employee['employee_code']}-{datetime.now().strftime('%Y%m%d')}")
         
         canvas.restoreState()
     
@@ -402,13 +438,22 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
         spaceBefore=0
     )
     
-    # Enhanced Company Header with professional styling and icons
-    story.append(Paragraph("🏢 RELIANCE JIO INFOTECH SOLUTIONS", company_header_style))
-    story.append(Paragraph("A Subsidiary of Reliance Industries Limited", company_subtitle_style))
-    story.append(Paragraph("📍 Registered Office: Maker Chambers IV, Nariman Point, Mumbai - 400021", company_details_style))
-    story.append(Paragraph("📋 CIN: L17110MH2007PLC169642 | GST: 27AABCR0000A1Z5", company_details_style))
-    story.append(Paragraph("📞 Phone: +91-22-3555-5000 | 📧 Email: hr@reliancejio.com", company_details_style))
-    story.append(Paragraph("🌐 Website: www.reliancejio.com", company_details_style))
+    # Enhanced Company Header with professional styling and icons (using configurable company details)
+    story.append(Paragraph(f"🏢 {company_config['name'].upper()}", company_header_style))
+    story.append(Paragraph(company_config['subtitle'], company_subtitle_style))
+    story.append(Paragraph(f"📍 Registered Office: {company_config['address']}", company_details_style))
+    
+    # Add CIN/GST only if configured
+    if company_config['cin'] or company_config['gst']:
+        cin_gst_parts = []
+        if company_config['cin']:
+            cin_gst_parts.append(f"CIN: {company_config['cin']}")
+        if company_config['gst']:
+            cin_gst_parts.append(f"GST: {company_config['gst']}")
+        story.append(Paragraph(f"📋 {' | '.join(cin_gst_parts)}", company_details_style))
+    
+    story.append(Paragraph(f"📞 Phone: {company_config['phone']} | 📧 Email: {company_config['email']}", company_details_style))
+    story.append(Paragraph(f"🌐 Website: {company_config['website']}", company_details_style))
     story.append(Spacer(1, 15))
     
     # Certificate Badge and Title with enhanced styling
@@ -423,7 +468,10 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
     except:
         formatted_date = issue_date
     
-    cert_number = f"Certificate No: RJI-{employee['employee_code']}-{issue_date.replace('-', '')}"
+    from ..config import get_company_name
+    _cn = get_company_name()
+    _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+    cert_number = f"Certificate No: {_prefix}-{employee['employee_code']}-{issue_date.replace('-', '')}"
     story.append(Paragraph(cert_number, certificate_number_style))
     
     # Add certificate badge (drawn directly in the border function)
@@ -434,7 +482,7 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
     
     # First paragraph with proper justification and spacing (fixed spacing issues)
     cert_text_1 = f"""
-    This is to certify that <b>{employee['full_name']}</b>, bearing Employee ID <b>{employee['employee_code']}</b>, is currently employed with <b>Reliance Jio Infotech Solutions</b> as <b>{employee['designation']}</b> in the <b>{employee['department']}</b> department.
+    This is to certify that <b>{employee['full_name']}</b>, bearing Employee ID <b>{employee['employee_code']}</b>, is currently employed with <b>{company_config['name']}</b> as <b>{employee['designation']}</b> in the <b>{employee['department']}</b> department.
     """
     story.append(Paragraph(cert_text_1, body_style))
     
@@ -531,8 +579,8 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
     footer_text = """
     <b>🔒 Security & Verification Information:</b><br/>
     • This certificate is computer-generated and bears digital signatures<br/>
-    • Certificate ID: RJI-{employee['employee_code']}-{datetime.now().strftime('%Y%m%d')}<br/>
-    • For verification, please contact: hr@reliancejio.com<br/>
+    • Certificate ID: {_prefix}-{employee['employee_code']}-{datetime.now().strftime('%Y%m%d')}<br/>
+    • For verification, please contact: {company_config['email']}<br/>
     • Certificate validity: 6 months from date of issue<br/>
     • This document is confidential and should be handled with care<br/>
     • For any queries, call: +91-22-3555-5000<br/>
@@ -551,6 +599,9 @@ def generate_bonafide_pdf(employee: dict, organization_name: str) -> bytes:
 def generate_experience_certificate(employee: dict, organization_name: str) -> bytes:
     """Generate a professionally designed experience certificate"""
     buffer = BytesIO()
+    
+    # Get company configuration
+    company_config = get_company_config()
     
     doc = SimpleDocTemplate(
         buffer, 
@@ -604,7 +655,7 @@ def generate_experience_certificate(employee: dict, organization_name: str) -> b
         canvas.setFont("Helvetica", 48)
         canvas.setFillColor(colors.HexColor('#f8fafc'))
         canvas.rotate(45)
-        canvas.drawCentredString(width/2, height/2, "RELIANCE JIO")
+        canvas.drawCentredString(width/2, height/2, "{company_config['name'].upper()}")
         canvas.rotate(-45)
         
         canvas.restoreState()
@@ -721,11 +772,11 @@ def generate_experience_certificate(employee: dict, organization_name: str) -> b
     
     # Company Header
     story.append(Paragraph("🏢", company_header_style))
-    story.append(Paragraph("RELIANCE JIO INFOTECH SOLUTIONS", company_header_style))
+    story.append(Paragraph("{company_config['name'].upper()}", company_header_style))
     story.append(Paragraph("A Subsidiary of Reliance Industries Limited", company_subtitle_style))
     story.append(Paragraph("Registered Office: Maker Chambers IV, Nariman Point, Mumbai - 400021", company_details_style))
     story.append(Paragraph("CIN: L17110MH2007PLC169642 | GST: 27AABCR0000A1Z5", company_details_style))
-    story.append(Paragraph("Phone: +91-22-3555-5000 | Email: hr@reliancejio.com", company_details_style))
+    story.append(Paragraph(f"Phone: {company_config['phone']} | Email: {company_config['email']}", company_details_style))
     story.append(Spacer(1, 15))
     
     # Certificate Title
@@ -739,7 +790,10 @@ def generate_experience_certificate(employee: dict, organization_name: str) -> b
     except:
         formatted_date = issue_date
     
-    cert_number = f"Certificate No: RJI-EXP-{employee['employee_code']}-{issue_date.replace('-', '')}"
+    from ..config import get_company_name
+    _cn = get_company_name()
+    _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+    cert_number = f"Certificate No: {_prefix}-EXP-{employee['employee_code']}-{issue_date.replace('-', '')}"
     story.append(Paragraph(cert_number, certificate_number_style))
     
     # Main Certificate Text
@@ -750,7 +804,7 @@ def generate_experience_certificate(employee: dict, organization_name: str) -> b
     purpose = employee.get('purpose', 'General purpose')
     
     cert_text_1 = f"""
-    This is to certify that <b>{employee['full_name']}</b>, bearing Employee ID <b>{employee['employee_code']}</b>, was employed with <b>Reliance Jio Infotech Solutions</b> as <b>{employee['designation']}</b> in the <b>{employee['department']}</b> department.
+    This is to certify that <b>{employee['full_name']}</b>, bearing Employee ID <b>{employee['employee_code']}</b>, was employed with <b>{company_config['name']}</b> as <b>{employee['designation']}</b> in the <b>{employee['department']}</b> department.
     """
     story.append(Paragraph(cert_text_1, body_style))
     
@@ -835,7 +889,7 @@ def generate_experience_certificate(employee: dict, organization_name: str) -> b
     footer_text = """
     <b>Important Notes:</b><br/>
     • This certificate is computer-generated and bears digital signatures<br/>
-    • For verification, please contact: hr@reliancejio.com<br/>
+    • For verification, please contact: {company_config['email']}<br/>
     • Certificate validity: 6 months from date of issue<br/>
     • This document is confidential and should be handled with care<br/>
     • For any queries, call: +91-22-3555-5000
@@ -850,6 +904,9 @@ def generate_experience_certificate(employee: dict, organization_name: str) -> b
 def generate_offer_letter(employee: dict, organization_name: str) -> bytes:
     """Generate a professionally designed offer letter"""
     buffer = BytesIO()
+    
+    # Get company configuration
+    company_config = get_company_config()
     
     doc = SimpleDocTemplate(
         buffer, 
@@ -903,7 +960,7 @@ def generate_offer_letter(employee: dict, organization_name: str) -> bytes:
         canvas.setFont("Helvetica", 48)
         canvas.setFillColor(colors.HexColor('#f8fafc'))
         canvas.rotate(45)
-        canvas.drawCentredString(width/2, height/2, "RELIANCE JIO")
+        canvas.drawCentredString(width/2, height/2, "{company_config['name'].upper()}")
         canvas.rotate(-45)
         
         canvas.restoreState()
@@ -1008,11 +1065,11 @@ def generate_offer_letter(employee: dict, organization_name: str) -> bytes:
     
     # Company Header
     story.append(Paragraph("🏢", company_header_style))
-    story.append(Paragraph("RELIANCE JIO INFOTECH SOLUTIONS", company_header_style))
+    story.append(Paragraph("{company_config['name'].upper()}", company_header_style))
     story.append(Paragraph("A Subsidiary of Reliance Industries Limited", company_subtitle_style))
     story.append(Paragraph("Registered Office: Maker Chambers IV, Nariman Point, Mumbai - 400021", company_details_style))
     story.append(Paragraph("CIN: L17110MH2007PLC169642 | GST: 27AABCR0000A1Z5", company_details_style))
-    story.append(Paragraph("Phone: +91-22-3555-5000 | Email: hr@reliancejio.com", company_details_style))
+    story.append(Paragraph(f"Phone: {company_config['phone']} | Email: {company_config['email']}", company_details_style))
     story.append(Spacer(1, 15))
     
     # Document Title
@@ -1026,7 +1083,10 @@ def generate_offer_letter(employee: dict, organization_name: str) -> bytes:
     except:
         formatted_date = issue_date
     
-    doc_number = f"Offer Letter No: RJI-OFF-{employee['employee_code']}-{issue_date.replace('-', '')}"
+    from ..config import get_company_name
+    _cn = get_company_name()
+    _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+    doc_number = f"Offer Letter No: {_prefix}-OFF-{employee['employee_code']}-{issue_date.replace('-', '')}"
     story.append(Paragraph(doc_number, document_number_style))
     
     # Main Document Text
@@ -1039,7 +1099,7 @@ def generate_offer_letter(employee: dict, organization_name: str) -> bytes:
     story.append(Paragraph(offer_text_1, body_style))
     
     offer_text_2 = f"""
-    We are pleased to offer you the position of <b>{employee['designation']}</b> in the <b>{employee['department']}</b> department at Reliance Jio Infotech Solutions, effective from <b>{employee['joining_date']}</b>.
+    We are pleased to offer you the position of <b>{employee['designation']}</b> in the <b>{employee['department']}</b> department at {company_config['name']}, effective from <b>{employee['joining_date']}</b>.
     """
     story.append(Paragraph(offer_text_2, body_style))
     
@@ -1120,7 +1180,7 @@ def generate_offer_letter(employee: dict, organization_name: str) -> bytes:
     footer_text = """
     <b>Important Notes:</b><br/>
     • This offer letter is computer-generated and bears digital signatures<br/>
-    • For verification, please contact: hr@reliancejio.com<br/>
+    • For verification, please contact: {company_config['email']}<br/>
     • Offer validity: 30 days from date of issue<br/>
     • This document is confidential and should be handled with care<br/>
     • For any queries, call: +91-22-3555-5000
@@ -1135,6 +1195,9 @@ def generate_offer_letter(employee: dict, organization_name: str) -> bytes:
 def generate_salary_certificate(employee: dict, organization_name: str) -> bytes:
     """Generate a professionally designed salary certificate"""
     buffer = BytesIO()
+    
+    # Get company configuration
+    company_config = get_company_config()
     
     doc = SimpleDocTemplate(
         buffer, 
@@ -1188,7 +1251,7 @@ def generate_salary_certificate(employee: dict, organization_name: str) -> bytes
         canvas.setFont("Helvetica", 48)
         canvas.setFillColor(colors.HexColor('#f8fafc'))
         canvas.rotate(45)
-        canvas.drawCentredString(width/2, height/2, "RELIANCE JIO")
+        canvas.drawCentredString(width/2, height/2, "{company_config['name'].upper()}")
         canvas.rotate(-45)
         
         canvas.restoreState()
@@ -1293,11 +1356,11 @@ def generate_salary_certificate(employee: dict, organization_name: str) -> bytes
     
     # Company Header
     story.append(Paragraph("🏢", company_header_style))
-    story.append(Paragraph("RELIANCE JIO INFOTECH SOLUTIONS", company_header_style))
+    story.append(Paragraph("{company_config['name'].upper()}", company_header_style))
     story.append(Paragraph("A Subsidiary of Reliance Industries Limited", company_subtitle_style))
     story.append(Paragraph("Registered Office: Maker Chambers IV, Nariman Point, Mumbai - 400021", company_details_style))
     story.append(Paragraph("CIN: L17110MH2007PLC169642 | GST: 27AABCR0000A1Z5", company_details_style))
-    story.append(Paragraph("Phone: +91-22-3555-5000 | Email: hr@reliancejio.com", company_details_style))
+    story.append(Paragraph(f"Phone: {company_config['phone']} | Email: {company_config['email']}", company_details_style))
     story.append(Spacer(1, 15))
     
     # Document Title
@@ -1311,7 +1374,10 @@ def generate_salary_certificate(employee: dict, organization_name: str) -> bytes
     except:
         formatted_date = issue_date
     
-    doc_number = f"Certificate No: RJI-SAL-{employee['employee_code']}-{issue_date.replace('-', '')}"
+    from ..config import get_company_name
+    _cn = get_company_name()
+    _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+    doc_number = f"Certificate No: {_prefix}-SAL-{employee['employee_code']}-{issue_date.replace('-', '')}"
     story.append(Paragraph(doc_number, document_number_style))
     
     # Main Document Text
@@ -1322,7 +1388,7 @@ def generate_salary_certificate(employee: dict, organization_name: str) -> bytes
     purpose = employee.get('purpose', 'General purpose')
     
     cert_text_1 = f"""
-    This is to certify that <b>{employee['full_name']}</b>, bearing Employee ID <b>{employee['employee_code']}</b>, is currently employed with <b>Reliance Jio Infotech Solutions</b> as <b>{employee['designation']}</b> in the <b>{employee['department']}</b> department.
+    This is to certify that <b>{employee['full_name']}</b>, bearing Employee ID <b>{employee['employee_code']}</b>, is currently employed with <b>{company_config['name']}</b> as <b>{employee['designation']}</b> in the <b>{employee['department']}</b> department.
     """
     story.append(Paragraph(cert_text_1, body_style))
     
@@ -1405,7 +1471,7 @@ def generate_salary_certificate(employee: dict, organization_name: str) -> bytes
     footer_text = """
     <b>Important Notes:</b><br/>
     • This salary certificate is computer-generated and bears digital signatures<br/>
-    • For verification, please contact: hr@reliancejio.com<br/>
+    • For verification, please contact: {company_config['email']}<br/>
     • Certificate validity: 3 months from date of issue<br/>
     • This document is confidential and should be handled with care<br/>
     • For any queries, call: +91-22-3555-5000

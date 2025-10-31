@@ -10,7 +10,8 @@ import logging
 from ..services.certificate_generator import generate_bonafide_pdf
 from ..services.employee_validator import EmployeeValidator
 from ..services.db import db_service
-from ..config import auth_disabled
+from ..config import auth_disabled, get_company_name
+from .auth import get_current_user_dependency
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -47,8 +48,8 @@ def initialize_services():
 initialize_services()
 
 def org_name():
-    """Get organization name with fallback"""
-    return "Reliance Jio Infotech Solutions"
+    """Get organization name (uses configurable company name)"""
+    return get_company_name()
 
 # Utility function to validate input content
 def validate_input_content(content: str, max_length: int = 100) -> { 'is_valid': bool, 'error': str }:
@@ -100,8 +101,17 @@ class CertRequest(BaseModel):
         return v
 
 @router.post("/bonafide")
-async def bonafide(req: CertRequest, request: Request):
-    """Generate bonafide certificate with enhanced error handling"""
+async def bonafide(
+    req: CertRequest, 
+    request: Request,
+    current_user: dict = Depends(get_current_user_dependency)
+):
+    """
+    Generate bonafide certificate with authentication and same-user restriction
+    
+    Security: Users can only generate certificates for themselves.
+    Any attempt to generate a certificate for another employee will result in 403 Forbidden.
+    """
     start_time = datetime.now()
     
     try:
@@ -109,19 +119,34 @@ async def bonafide(req: CertRequest, request: Request):
         client_ip = request.client.host if request.client else "unknown"
         logger.info(f"📄 Bonafide certificate request from {client_ip}: {req.emp_id}")
         
+        # SECURITY: Enforce same-user restriction
+        # Users can ONLY generate certificates for themselves
+        current_emp_id = str(current_user.get("emp_id", ""))
+        requested_emp_id = str(req.emp_id)
+        
+        if current_emp_id != requested_emp_id:
+            logger.warning(
+                f"⚠️ SECURITY: User {current_emp_id} attempted to generate certificate "
+                f"for user {requested_emp_id} - FORBIDDEN"
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="You don't have access to generate documents for other users"
+            )
+        
         # Get employee data from MongoDB
         employee = await db_service.get_employee_by_id(int(req.emp_id))
         if not employee:
             logger.warning(f"Employee not found: {req.emp_id}")
             raise HTTPException(status_code=404, detail="Employee not found")
 
-        # Generate certificate
+        # Generate certificate with configured company name
         organization = req.organization_name or org_name()
         pdf_bytes = generate_bonafide_pdf(employee, organization)
         
         # Log success
         response_time = (datetime.now() - start_time).total_seconds()
-        logger.info(f"✅ Bonafide certificate generated successfully in {response_time:.2f}s")
+        logger.info(f"✅ Bonafide certificate generated successfully for user {current_emp_id} in {response_time:.2f}s")
         
         return StreamingResponse(
             BytesIO(pdf_bytes), 

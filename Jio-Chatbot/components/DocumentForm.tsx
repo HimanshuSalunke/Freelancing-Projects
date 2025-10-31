@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FileCheck, 
@@ -52,6 +52,7 @@ interface Employee {
   designation: string
   department: string
   joining_date: string
+  project_role?: string
 }
 
 const documentTypes: DocumentType[] = [
@@ -299,10 +300,75 @@ export default function DocumentForm() {
   const [error, setError] = useState<string | null>(null)
   const [showError, setShowError] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
+
+  // Fetch current user on mount and auto-fill form
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      setIsLoadingUser(true)
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include'
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setCurrentUser(data)
+          
+          // Auto-fill form with current user's data
+          if (data.emp_id) {
+            // Fetch full employee details
+            try {
+              const empResponse = await fetch('/api/employee-search', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: data.emp_id.toString() }),
+              })
+              
+              if (empResponse.ok) {
+                const empData = await empResponse.json()
+                if (empData.success && empData.suggestions && empData.suggestions.length > 0) {
+                  const employee = empData.suggestions[0]
+                  setFormData({
+                    employeeName: employee.full_name,
+                    employeeId: employee.employee_code,
+                    designation: employee.designation,
+                    department: employee.department,
+                    joiningDate: convertDateFormat(employee.joining_date),
+                  })
+                }
+              }
+            } catch (err) {
+              console.error('Failed to fetch employee details:', err)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch current user:', error)
+        toast.error('Failed to load user information')
+      } finally {
+        setIsLoadingUser(false)
+      }
+    }
+    
+    fetchCurrentUser()
+  }, [])
 
   const handleDocumentSelect = (document: DocumentType) => {
     setSelectedDocument(document)
-    setFormData({})
+    // Don't clear formData - we want to keep user's auto-filled employee data
+    // Only clear non-employee fields
+    const employeeFields = ['employeeName', 'employeeId', 'designation', 'department', 'joiningDate']
+    const newFormData: Record<string, string> = {}
+    employeeFields.forEach(field => {
+      if (formData[field]) {
+        newFormData[field] = formData[field]
+      }
+    })
+    setFormData(newFormData)
     setGeneratedDocument(null)
     setError(null)
     setShowError(false)
@@ -695,57 +761,59 @@ export default function DocumentForm() {
                   </div>
                 </div>
 
-                {/* Employee Search Section */}
+                {/* Security Notice */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Search className="w-5 h-5 text-blue-600" />
-                    Quick Employee Search & Auto-fill
+                  <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-blue-600" />
+                    Security Notice
                   </h4>
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={employeeSearchQuery}
-                        onChange={(e) => {
-                          setEmployeeSearchQuery(e.target.value)
-                          searchEmployees(e.target.value)
-                        }}
-                        placeholder="Search employee by name or ID..."
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
+                  <p className="text-sm text-gray-700">
+                    You can edit all fields. The server will verify that the logged-in
+                    user matches the employee on the document. If not, the request will be rejected.
+                  </p>
+                </div>
+
+                {/* Employee Search & Autofill */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Search className="w-5 h-5 text-gray-500" />
+                    <h4 className="font-semibold text-gray-900">Employee Search (optional)</h4>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={employeeSearchQuery}
+                      onChange={(e) => setEmployeeSearchQuery(e.target.value)}
+                      placeholder="Search by name, email, or employee ID"
+                      className="flex-1 px-4 py-3 border rounded-lg border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
                     <button
                       onClick={handleManualSearch}
-                      disabled={isSearching}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
+                      disabled={isSearching || !employeeSearchQuery.trim()}
+                      className="px-4 py-3 bg-gray-900 text-white rounded-lg disabled:bg-gray-400"
                     >
-                      {isSearching ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Search className="w-4 h-4" />
-                      )}
-                      Search
+                      {isSearching ? 'Searching...' : 'Search'}
                     </button>
                   </div>
-                  
-                  {/* Employee Suggestions */}
+
+                  {/* Suggestions */}
                   {employeeSuggestions.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-sm text-gray-600">Found employees:</p>
-                      {employeeSuggestions.map((emp, index) => (
-                        <div
-                          key={index}
-                          className="p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    <div className="mt-3 border border-gray-200 rounded-lg divide-y">
+                      {employeeSuggestions.map((emp, idx) => (
+                        <button
+                          key={`${emp.employee_code}-${idx}`}
+                          type="button"
                           onClick={() => fillFormWithEmployee(emp)}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-gray-900">{emp.full_name}</p>
-                              <p className="text-sm text-gray-600">ID: {emp.employee_code} | {emp.designation}</p>
-                            </div>
-                            <UserCheck className="w-4 h-4 text-green-600" />
+                          <div className="font-medium text-gray-900">{emp.full_name} <span className="text-gray-500">({emp.employee_code})</span></div>
+                          <div className="text-sm text-gray-600">
+                            {emp.project_role && (
+                              <span className="text-purple-600 font-medium mr-2">{emp.project_role}</span>
+                            )}
+                            {emp.designation} • {emp.department}
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -825,21 +893,30 @@ export default function DocumentForm() {
 
                 {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  {selectedDocument.fields.map((field) => (
-                    <div key={field.id}>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {field.label}
-                      </label>
-                      <input
-                        type={field.type}
-                        value={formData[field.id] || ''}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        placeholder={field.placeholder}
-                        required={field.required}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                      />
-                    </div>
-                  ))}
+                  {selectedDocument.fields.map((field) => {
+                    // Allow editing of all fields; server will validate ownership on submit
+                    const isLockedField = false
+
+                    return (
+                      <div key={field.id}>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {field.label}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={field.type}
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            placeholder={field.placeholder}
+                            required={field.required}
+                            disabled={isLockedField}
+                            readOnly={isLockedField}
+                            className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent`}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
 
                 {/* Action Buttons */}

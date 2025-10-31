@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { Bot, Sparkles, Shield, LogOut, User, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { createPortal } from 'react-dom'
+import { getCompanyName } from '@/lib/config'
 
 interface UserInfo {
   emp_id: number
@@ -13,6 +14,7 @@ interface UserInfo {
   email: string
   designation: string
   department: string
+  project_role?: string
 }
 
 export default function Header() {
@@ -142,7 +144,7 @@ export default function Header() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">
-                  Reliance Jio Infotech Solutions
+                  {getCompanyName()}
                 </h1>
                 <p className="text-sm text-gray-600 flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
@@ -192,7 +194,7 @@ export default function Header() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">
-                Reliance Jio Infotech Solutions
+                {getCompanyName()}
               </h1>
               <p className="text-sm text-gray-600 flex items-center gap-1">
                 <Sparkles className="w-3 h-3" />
@@ -216,7 +218,7 @@ export default function Header() {
                 </div>
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-medium text-gray-900">{user.full_name}</p>
-                  <p className="text-xs text-gray-600">{user.designation}</p>
+                  <p className="text-xs text-gray-600">{user.project_role || user.designation}</p>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
               </button>
@@ -256,6 +258,7 @@ export default function Header() {
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">{user.full_name}</p>
                       <p className="text-xs text-gray-600">{user.email}</p>
+                      <p className="text-xs text-purple-600 font-medium">{user.project_role || 'Team Member'}</p>
                       <p className="text-xs text-gray-500">{user.department} • {user.designation}</p>
                     </div>
                     <button

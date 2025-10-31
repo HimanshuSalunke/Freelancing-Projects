@@ -7,7 +7,7 @@ from datetime import datetime
 
 from ..services.bad_language_filter import BadLanguageFilter
 from ..services.qa_engine import HybridQAEngine
-from ..config import auth_disabled
+from ..config import auth_disabled, get_company_name
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -100,12 +100,14 @@ def get_simple_response(message: str) -> str:
     # Enhanced greeting detection - various ways to say hello
     greeting_words = ['hello', 'hi', 'hey', 'hii', 'hiii', 'hallo', 'halo', 'hlo', 'hlw', 'hlo', 'hiiii']
     if any(word in lower_message for word in greeting_words):
-        return "👋 Hello! I'm your Reliance Jio Infotech Solutions AI Assistant. I can help you with HR questions, document requests, and PDF processing. How can I assist you today?"
+        company_name = get_company_name()
+        return f"👋 Hello! I'm your {company_name} AI Assistant. I can help you with HR questions, document requests, and PDF processing. How can I assist you today?"
     
     # Enhanced help detection - various ways to ask for help
     help_words = ['help', 'what can you do', 'capabilities', 'help me', 'can you help', 'please help', 'i need help', 'what you can do', 'what do you do', 'how can you help', 'what services', 'what help', 'help pls', 'help plz']
     if any(word in lower_message for word in help_words):
-        return "🤖 **Reliance Jio Infotech Solutions - Your Intelligent Companion**\n\nI can help you with three main services:\n\n💬 **HR Q&A Chat**\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (type \"I need a document\")\n• Quick and accurate responses to your queries\n\n📄 **PDF Summarization**\n• Upload PDFs up to 50MB\n• Handles large documents (30+ pages)\n• Extracts and formats table data\n• Real-time processing with progress tracking\n\n📜 **Document Requests**\n• Request any of 16 official document types\n• Official Reliance Jio Infotech Solutions format\n• Professional document generation\n• Immediate download available\n• **Strict validation:** ALL fields must match exactly with employee records\n\n💡 **Quick Commands:**\n• Type \"qa\" or \"chat\" to switch to HR Q&A mode\n• Type \"summarize\" or \"pdf\" to switch to PDF mode\n• Type \"I need a document\" to request official documents\n• Search employees: \"search employee [name or ID]\"\n• Use the mode buttons above for quick switching\n\n⚠️ **Important:** Document generation requires ALL employee details to match our records exactly."
+        company_name = get_company_name()
+        return f"🤖 **{company_name} - Your Intelligent Companion**\n\nI can help you with three main services:\n\n💬 **HR Q&A Chat**\n• Ask about company policies, benefits, and procedures\n• Get information about leave policies, attendance, and more\n• Request official documents (type \"I need a document\")\n• Quick and accurate responses to your queries\n\n📄 **PDF Summarization**\n• Upload PDFs up to 50MB\n• Handles large documents (30+ pages)\n• Extracts and formats table data\n• Real-time processing with progress tracking\n\n📜 **Document Requests**\n• Request any of 16 official document types\n• Official {company_name} format\n• Professional document generation\n• Immediate download available\n• **Strict validation:** ALL fields must match exactly with employee records\n\n💡 **Quick Commands:**\n• Type \"qa\" or \"chat\" to switch to HR Q&A mode\n• Type \"summarize\" or \"pdf\" to switch to PDF mode\n• Type \"I need a document\" to request official documents\n• Search employees: \"search employee [name or ID]\"\n• Use the mode buttons above for quick switching\n\n⚠️ **Important:** Document generation requires ALL employee details to match our records exactly."
     
     # Enhanced salary detection - various ways to ask about salary
     salary_words = ['salary', 'compensation', 'pay', 'payment', 'money', 'income', 'earnings', 'wage', 'wages', 'paycheck', 'pay check', 'pay slip', 'payslip', 'salary slip', 'salaryslip', 'form 16', 'form16', 'tax', 'tax document', 'taxdoc']

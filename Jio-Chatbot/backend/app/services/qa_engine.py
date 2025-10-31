@@ -12,6 +12,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 
 from .document_request_handler import DocumentRequestHandler
+from ..config import get_company_name
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -352,8 +353,9 @@ class HybridQAEngine:
         
         try:
             # Enhanced prompt for better responses
+            company_name = get_company_name()
             prompt = f"""
-            You are an AI assistant for Reliance Jio Infotech Solutions. 
+            You are an AI assistant for {company_name}. 
             Answer the following question about company policies, procedures, or general HR matters.
             Be helpful, professional, and accurate. If you're not sure about something, say so.
             
@@ -470,7 +472,7 @@ Thank you for providing the details! I've received your document request informa
 4. The document will be generated and sent to you within 2-3 business days
 
 **Contact HR:**
-• Email: hr@reliancejio.com
+• Email: {company_email}
 • Phone: Available through internal directory
 
 If you need immediate assistance, please contact HR directly."""
@@ -587,7 +589,8 @@ If you need immediate assistance, please contact HR directly."""
         except Exception as e:
             logger.error(f"❌ Error in Gemini API: {str(e)}")
             # Fallback to simple response
-            return f"Hello! I'm your Reliance Jio Infotech Solutions AI Assistant. I can help you with HR questions, document requests, and PDF processing. You asked: '{question}'. How can I assist you today?"
+            company_name = get_company_name()
+            return f"Hello! I'm your {company_name} AI Assistant. I can help you with HR questions, document requests, and PDF processing. You asked: '{question}'. How can I assist you today?"
     
     def _handle_specific_document_request(self, question: str) -> str:
         """Handle specific document requests with better responses"""
@@ -607,7 +610,7 @@ To request an Experience Certificate, please follow these steps:
 • Purpose of the certificate
 
 📞 **Contact HR:**
-• Email: hr@reliancejio.com
+• Email: {company_email}
 • Phone: Available through internal directory
 
 ⏱️ **Processing Time:** 3-5 business days
@@ -627,7 +630,7 @@ To request an Employment Verification Letter, please provide:
 • Any specific requirements
 
 📞 **Contact HR:**
-• Email: hr@reliancejio.com
+• Email: {company_email}
 • Phone: Available through internal directory
 
 ⏱️ **Processing Time:** 2-3 business days
@@ -647,7 +650,7 @@ To request Salary Slips, please provide:
 • Purpose
 
 📞 **Contact HR:**
-• Email: hr@reliancejio.com
+• Email: {company_email}
 • Phone: Available through internal directory
 
 ⏱️ **Processing Time:** 1-2 business days
@@ -667,7 +670,7 @@ To request Form 16 or Tax Documents, please provide:
 • Purpose
 
 📞 **Contact HR:**
-• Email: hr@reliancejio.com
+• Email: {company_email}
 • Phone: Available through internal directory
 
 ⏱️ **Processing Time:** 3-5 business days

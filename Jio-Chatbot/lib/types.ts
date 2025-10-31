@@ -26,6 +26,7 @@ export interface Employee {
   joining_date: string
   email?: string
   emp_id?: number
+  project_role?: string
 }
 
 // API Response Types

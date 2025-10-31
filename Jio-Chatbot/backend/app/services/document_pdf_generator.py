@@ -13,10 +13,11 @@ from reportlab.lib import colors
 import io
 
 from .employee_validator import EmployeeValidator
+from ..config import get_company_config
 
 # Enhanced helper functions for premium design - Fixed to avoid image processing issues
 def get_company_logo():
-    """Generate a professional Reliance Jio logo using ReportLab - Fixed version"""
+    """Generate a professional company logo using ReportLab - Fixed version"""
     # Return None to avoid image processing issues - will be handled in text-based design
     return None
 
@@ -48,12 +49,13 @@ class DocumentPDFGenerator:
         self.styles = getSampleStyleSheet()
         self.setup_enhanced_styles()
         
-        # Company details
-        self.company_name = "Reliance Jio Infotech Solutions"
-        self.company_address = "Mumbai, Maharashtra, India"
-        self.company_email = "hr@reliancejio.com"
-        self.company_phone = "+91-22-3555-0000"
-        self.company_website = "www.reliancejio.com"
+        # Company details (using configurable company details)
+        self.company_config = get_company_config()
+        self.company_name = self.company_config['name']
+        self.company_address = self.company_config['address']
+        self.company_email = self.company_config['email']
+        self.company_phone = self.company_config['phone']
+        self.company_website = self.company_config['website']
         
         # Document templates
         self.document_templates = {
@@ -328,21 +330,36 @@ class DocumentPDFGenerator:
     def _add_enhanced_company_header(self, story: List):
         """Add enhanced company header with logo and professional styling"""
         # Company header (without logo to avoid image processing issues)
-        story.append(Paragraph("RELIANCE JIO INFOTECH SOLUTIONS", self.company_header_style))
-        story.append(Paragraph("A Subsidiary of Reliance Industries Limited", self.company_subtitle_style))
-        story.append(Paragraph("📍 Registered Office: Maker Chambers IV, Nariman Point, Mumbai - 400021", self.company_subtitle_style))
-        story.append(Paragraph("📋 CIN: L17110MH2007PLC169642 | GST: 27AABCR0000A1Z5", self.company_subtitle_style))
-        story.append(Paragraph("📞 Phone: +91-22-3555-5000 | 📧 Email: hr@reliancejio.com", self.company_subtitle_style))
-        story.append(Paragraph("🌐 Website: www.reliancejio.com", self.company_subtitle_style))
+        story.append(Paragraph(self.company_name.upper(), self.company_header_style))
+        
+        # Company subtitle (if configured)
+        if self.company_config.get('subtitle'):
+            story.append(Paragraph(self.company_config['subtitle'], self.company_subtitle_style))
+        
+        # Registered address
+        story.append(Paragraph(f"📍 Registered Office: {self.company_address}", self.company_subtitle_style))
+        
+        # CIN and GST (optional - only show if configured)
+        cin_gst_parts = []
+        if self.company_config.get('cin'):
+            cin_gst_parts.append(f"CIN: {self.company_config['cin']}")
+        if self.company_config.get('gst'):
+            cin_gst_parts.append(f"GST: {self.company_config['gst']}")
+        if cin_gst_parts:
+            story.append(Paragraph(f"📋 {' | '.join(cin_gst_parts)}", self.company_subtitle_style))
+        
+        # Contact information
+        story.append(Paragraph(f"📞 Phone: {self.company_phone} | 📧 Email: {self.company_email}", self.company_subtitle_style))
+        story.append(Paragraph(f"🌐 Website: {self.company_website}", self.company_subtitle_style))
         story.append(Spacer(1, 15))
 
     def _add_enhanced_footer(self, story: List):
         """Add enhanced footer with security features"""
         story.append(Spacer(1, 20))
         story.append(Paragraph("🔒 This is a digitally generated document with enhanced security features", self.footer_style))
-        story.append(Paragraph("📄 Document ID: RJI-" + datetime.now().strftime('%Y%m%d%H%M%S'), self.footer_style))
+        story.append(Paragraph("📄 Document ID: " + datetime.now().strftime('%Y%m%d%H%M%S'), self.footer_style))
         story.append(Paragraph("⚡ Generated on: " + datetime.now().strftime('%d-%m-%Y at %H:%M:%S'), self.footer_style))
-        story.append(Paragraph("🛡️ Protected by Reliance Jio Infotech Solutions Security Protocol", self.footer_style))
+        story.append(Paragraph(f"🛡️ Protected by {self.company_name} Security Protocol", self.footer_style))
 
     def _add_signature_section(self, story: List, signatory_name: str, designation: str):
         """Add enhanced signature section with digital signatures"""
@@ -424,7 +441,11 @@ class DocumentPDFGenerator:
         # QR Code text (instead of image)
         canvas.setFillColor(colors.HexColor('#1e40af'))
         canvas.setFont("Helvetica-Bold", 6)
-        canvas.drawString(0.2*inch, 0.2*inch, f"RJI-{datetime.now().strftime('%Y%m%d%H%M%S')}")
+        # Dynamic prefix from company name initials (e.g., TechCorp Solutions -> TCS)
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        canvas.drawString(0.2*inch, 0.2*inch, f"{_prefix}-{datetime.now().strftime('%Y%m%d%H%M%S')}")
         
         # Page number
         canvas.setFillColor(colors.HexColor('#6b7280'))
@@ -457,7 +478,10 @@ class DocumentPDFGenerator:
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-BON-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-BON-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -474,7 +498,7 @@ class DocumentPDFGenerator:
         
         # Main Certificate Text
         cert_text_1 = f"""
-This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, is currently employed with <b>Reliance Jio Infotech Solutions</b> as <b>{designation}</b> in the <b>{department}</b> department.
+This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, is currently employed with <b>{self.company_name}</b> as <b>{designation}</b> in the <b>{department}</b> department.
         """
         story.append(Paragraph(cert_text_1, self.normal_style))
         
@@ -556,7 +580,10 @@ The information provided herein is true and accurate to the best of our knowledg
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
         relieving_date = employee_info.get('relieving_date', '')
         formatted_relieving_date = self._format_date(relieving_date)
-        ref_number = f"Reference No: RJI-EXP-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-EXP-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -573,7 +600,7 @@ The information provided herein is true and accurate to the best of our knowledg
         
         # Main Certificate Text
         cert_text_1 = f"""
-This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, was employed with <b>Reliance Jio Infotech Solutions</b> as <b>{designation}</b> in the <b>{department}</b> department.
+This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, was employed with <b>{self.company_name}</b> as <b>{designation}</b> in the <b>{department}</b> department.
         """
         story.append(Paragraph(cert_text_1, self.normal_style))
         
@@ -678,7 +705,10 @@ This certificate is issued for official purposes and confirms the employment det
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-SAL-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-SAL-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -696,7 +726,7 @@ This certificate is issued for official purposes and confirms the employment det
         
         # Main Certificate Text
         cert_text_1 = f"""
-This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, is currently employed with <b>Reliance Jio Infotech Solutions</b> as <b>{designation}</b> in the <b>{department}</b> department.
+This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, is currently employed with <b>{self.company_name}</b> as <b>{designation}</b> in the <b>{department}</b> department.
         """
         story.append(Paragraph(cert_text_1, self.normal_style))
         
@@ -784,7 +814,10 @@ The employee's salary is subject to applicable taxes and deductions as per the I
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-NOC-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-NOC-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -802,7 +835,7 @@ The employee's salary is subject to applicable taxes and deductions as per the I
         
         # Main Certificate Text
         noc_text_1 = f"""
-This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, is currently employed with <b>Reliance Jio Infotech Solutions</b> as <b>{designation}</b> in the <b>{department}</b> department.
+This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, is currently employed with <b>{self.company_name}</b> as <b>{designation}</b> in the <b>{department}</b> department.
         """
         story.append(Paragraph(noc_text_1, self.normal_style))
         
@@ -889,7 +922,10 @@ This NOC is issued for official purposes and confirms that there are no pending 
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-VISA-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-VISA-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -907,7 +943,7 @@ This NOC is issued for official purposes and confirms that there are no pending 
         
         # Main Certificate Text
         visa_text_1 = f"""
-This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, is currently employed with <b>Reliance Jio Infotech Solutions</b> as <b>{designation}</b> in the <b>{department}</b> department.
+This is to certify that <b>{employee_name}</b>, bearing Employee ID <b>{employee_id}</b>, is currently employed with <b>{self.company_name}</b> as <b>{designation}</b> in the <b>{department}</b> department.
         """
         story.append(Paragraph(visa_text_1, self.normal_style))
         
@@ -917,7 +953,7 @@ The employee has been associated with our organization since <b>{joining_date}</
         story.append(Paragraph(visa_text_2, self.normal_style))
         
         visa_text_3 = f"""
-We hereby confirm that the employee's travel is sponsored by our organization and all expenses related to the trip will be borne by Reliance Jio Infotech Solutions. The employee will return to India after completing the assigned work.
+We hereby confirm that the employee's travel is sponsored by our organization and all expenses related to the trip will be borne by {self.company_name}. The employee will return to India after completing the assigned work.
         """
         story.append(Paragraph(visa_text_3, self.normal_style))
         
@@ -994,7 +1030,10 @@ This visa support letter is issued for official purposes and confirms the employ
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-OFF-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-OFF-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1017,7 +1056,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(offer_text_1, self.salutation_style))
         
         offer_text_2 = f"""
-We are pleased to offer you the position of <b>{designation}</b> in the <b>{department}</b> department at <b>Reliance Jio Infotech Solutions</b>. This offer is based on your qualifications, experience, and the interview process you have successfully completed.
+We are pleased to offer you the position of <b>{designation}</b> in the <b>{department}</b> department at <b>{self.company_name}</b>. This offer is based on your qualifications, experience, and the interview process you have successfully completed.
         """
         story.append(Paragraph(offer_text_2, self.normal_style))
         
@@ -1043,7 +1082,7 @@ We are pleased to offer you the position of <b>{designation}</b> in the <b>{depa
         story.append(Paragraph(offer_text_4, self.normal_style))
         
         offer_text_5 = f"""
-Please confirm your acceptance of this offer by signing and returning a copy of this letter within 7 days. We look forward to welcoming you to the Reliance Jio Infotech Solutions team.
+Please confirm your acceptance of this offer by signing and returning a copy of this letter within 7 days. We look forward to welcoming you to the {self.company_name} team.
         """
         story.append(Paragraph(offer_text_5, self.normal_style))
         story.append(Spacer(1, 15))
@@ -1117,7 +1156,10 @@ Please confirm your acceptance of this offer by signing and returning a copy of 
         # Reference Number
         appointment_date = employee_info.get('appointment_date', datetime.now().strftime('%Y-%m-%d'))
         formatted_date = self._format_date(appointment_date)
-        ref_number = f"Reference No: RJI-APT-{employee_info.get('employee_id', '')}-{appointment_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-APT-{employee_info.get('employee_id', '')}-{appointment_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1140,7 +1182,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(apt_text_1, self.salutation_style))
         
         apt_text_2 = f"""
-We are pleased to confirm your appointment as <b>{designation}</b> in the <b>{department}</b> department at <b>Reliance Jio Infotech Solutions</b> with effect from <b>{appointment_date}</b>.
+We are pleased to confirm your appointment as <b>{designation}</b> in the <b>{department}</b> department at <b>{self.company_name}</b> with effect from <b>{appointment_date}</b>.
         """
         story.append(Paragraph(apt_text_2, self.normal_style))
         
@@ -1166,7 +1208,7 @@ We are pleased to confirm your appointment as <b>{designation}</b> in the <b>{de
         story.append(Paragraph(apt_text_4, self.normal_style))
         
         apt_text_5 = f"""
-We welcome you to the Reliance Jio Infotech Solutions family and look forward to a long and mutually beneficial association. Please sign and return a copy of this appointment letter as confirmation of your acceptance.
+We welcome you to the {self.company_name} family and look forward to a long and mutually beneficial association. Please sign and return a copy of this appointment letter as confirmation of your acceptance.
         """
         story.append(Paragraph(apt_text_5, self.normal_style))
         story.append(Spacer(1, 15))
@@ -1240,7 +1282,10 @@ We welcome you to the Reliance Jio Infotech Solutions family and look forward to
         # Reference Number
         promotion_date = employee_info.get('promotion_date', datetime.now().strftime('%Y-%m-%d'))
         formatted_date = self._format_date(promotion_date)
-        ref_number = f"Reference No: RJI-PR-{employee_info.get('employee_id', '')}-{promotion_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-PR-{employee_info.get('employee_id', '')}-{promotion_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1263,7 +1308,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(promotion_text_1, self.salutation_style))
         
         promotion_text_2 = f"""
-We are pleased to inform you that you have been promoted to the position of <b>{designation}</b> in the <b>{department}</b> department at <b>Reliance Jio Infotech Solutions</b> with effect from <b>{promotion_date}</b>.
+We are pleased to inform you that you have been promoted to the position of <b>{designation}</b> in the <b>{department}</b> department at <b>{self.company_name}</b> with effect from <b>{promotion_date}</b>.
         """
         story.append(Paragraph(promotion_text_2, self.normal_style))
         
@@ -1368,7 +1413,10 @@ We congratulate you on this well-deserved promotion and look forward to your con
         # Reference Number
         relieving_date = employee_info.get('relieving_date', datetime.now().strftime('%Y-%m-%d'))
         formatted_date = self._format_date(relieving_date)
-        ref_number = f"Reference No: RJI-RL-{employee_info.get('employee_id', '')}-{relieving_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-RL-{employee_info.get('employee_id', '')}-{relieving_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1390,7 +1438,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(relieving_text_1, self.salutation_style))
         
         relieving_text_2 = f"""
-This is to confirm that you have been relieved from your services with <b>Reliance Jio Infotech Solutions</b> with effect from <b>{relieving_date}</b> after completing all necessary formalities and handover procedures as per company policy.
+This is to confirm that you have been relieved from your services with <b>{self.company_name}</b> with effect from <b>{relieving_date}</b> after completing all necessary formalities and handover procedures as per company policy.
         """
         story.append(Paragraph(relieving_text_2, self.normal_style))
         
@@ -1421,7 +1469,7 @@ We acknowledge your resignation and confirm that you have completed all required
         story.append(Paragraph(relieving_text_5, self.normal_style))
         
         relieving_text_6 = f"""
-We wish you success in your future endeavors and thank you for your contributions to our organization. This relieving letter is issued for official purposes and confirms your separation from Reliance Jio Infotech Solutions.
+We wish you success in your future endeavors and thank you for your contributions to our organization. This relieving letter is issued for official purposes and confirms your separation from {self.company_name}.
         """
         story.append(Paragraph(relieving_text_6, self.normal_style))
         story.append(Spacer(1, 15))
@@ -1493,7 +1541,10 @@ We wish you success in your future endeavors and thank you for your contribution
         
         # Reference Number - Issue date should be current date when document is generated
         current_issue_date, formatted_issue_date = self._get_current_issue_date()
-        ref_number = f"Reference No: RJI-SL-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
+        from ..config import get_company_name
+        _cn = get_company_name()
+        _prefix = ''.join([w[0] for w in _cn.split() if w and w[0].isalnum()])[:6].upper() or 'DOC'
+        ref_number = f"Reference No: {_prefix}-SL-{employee_info.get('employee_id', '')}-{current_issue_date.replace('-', '')}"
         story.append(Paragraph(ref_number, self.reference_style))
         story.append(Spacer(1, 5))
         
@@ -1647,7 +1698,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(form_16_text_1, self.salutation_style))
         
         form_16_text_2 = f"""
-This is to certify that you have been issued Form 16 for the assessment year <b>{assessment_year}</b> from <b>Reliance Jio Infotech Solutions</b>. This document contains details of your salary income and tax deducted at source (TDS) for the financial year {int(assessment_year)-1}-{assessment_year}.
+This is to certify that you have been issued Form 16 for the assessment year <b>{assessment_year}</b> from <b>{self.company_name}</b>. This document contains details of your salary income and tax deducted at source (TDS) for the financial year {int(assessment_year)-1}-{assessment_year}.
         """
         story.append(Paragraph(form_16_text_2, self.normal_style))
         
@@ -1773,7 +1824,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(pf_statement_text_1, self.salutation_style))
         
         pf_statement_text_2 = f"""
-This is to certify that you have been issued a Provident Fund (PF) Statement for the month of <b>{formatted_issue_date.split('-')[1]}</b> from <b>Reliance Jio Infotech Solutions</b>. This statement contains details of your PF contributions and account balance.
+This is to certify that you have been issued a Provident Fund (PF) Statement for the month of <b>{formatted_issue_date.split('-')[1]}</b> from <b>{self.company_name}</b>. This statement contains details of your PF contributions and account balance.
         """
         story.append(Paragraph(pf_statement_text_2, self.normal_style))
         
@@ -1898,7 +1949,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(nda_copy_text_1, self.salutation_style))
         
         nda_copy_text_2 = f"""
-This is to certify that you have been issued a Non-Disclosure Agreement (NDA) copy for the assessment year <b>{formatted_issue_date.split('-')[2]}</b> from <b>Reliance Jio Infotech Solutions</b>. This document contains the terms and conditions of your confidentiality agreement.
+This is to certify that you have been issued a Non-Disclosure Agreement (NDA) copy for the assessment year <b>{formatted_issue_date.split('-')[2]}</b> from <b>{self.company_name}</b>. This document contains the terms and conditions of your confidentiality agreement.
         """
         story.append(Paragraph(nda_copy_text_2, self.normal_style))
         
@@ -2023,7 +2074,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(id_replacement_text_1, self.salutation_style))
         
         id_replacement_text_2 = f"""
-This is to confirm that your request for ID card replacement has been received and processed by <b>Reliance Jio Infotech Solutions</b>. Your new ID card will be issued within 3-5 working days.
+This is to confirm that your request for ID card replacement has been received and processed by <b>{self.company_name}</b>. Your new ID card will be issued within 3-5 working days.
         """
         story.append(Paragraph(id_replacement_text_2, self.normal_style))
         
@@ -2148,7 +2199,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(med_card_text_1, self.salutation_style))
         
         med_card_text_2 = f"""
-This is to certify that you have been issued a Medical Insurance Card copy from <b>Reliance Jio Infotech Solutions</b>. This document contains details of your medical insurance coverage and policy information.
+This is to certify that you have been issued a Medical Insurance Card copy from <b>{self.company_name}</b>. This document contains details of your medical insurance coverage and policy information.
         """
         story.append(Paragraph(med_card_text_2, self.normal_style))
         
@@ -2278,7 +2329,7 @@ Dear <b>{employee_name}</b>,
         story.append(Paragraph(travel_auth_text_1, self.salutation_style))
         
         travel_auth_text_2 = f"""
-This is to authorize your business travel to <b>{destination}</b> from <b>Reliance Jio Infotech Solutions</b>. This authorization letter confirms that your travel is sponsored by our organization for official business purposes.
+This is to authorize your business travel to <b>{destination}</b> from <b>{self.company_name}</b>. This authorization letter confirms that your travel is sponsored by our organization for official business purposes.
         """
         story.append(Paragraph(travel_auth_text_2, self.normal_style))
         
@@ -2297,7 +2348,7 @@ This is to authorize your business travel to <b>{destination}</b> from <b>Relian
         
         travel_auth_text_4 = f"""
 <b>Travel Arrangements:</b><br/>
-• All travel expenses will be borne by Reliance Jio Infotech Solutions<br/>
+• All travel expenses will be borne by {self.company_name}<br/>
 • Accommodation will be arranged by the company<br/>
 • Daily allowance will be provided as per company policy<br/>
 • Return travel will be arranged after completion of business<br/>

@@ -10,11 +10,11 @@ project_root = Path(__file__).parent.parent.parent
 env_path = project_root / ".env"
 if env_path.exists():
     load_dotenv(env_path)
-    print(f"✅ Loaded environment from: {env_path}")
+    print(f"[OK] Loaded environment from: {env_path}")
 else:
     # Fallback to current directory
     load_dotenv()
-    print("⚠️ Using fallback environment loading")
+    print("[WARNING] Using fallback environment loading")
 
 from .routers import chat, documents, certificates, health, gemini_documents, advanced_qa, document_requests, auth
 from .services.db import db_service
@@ -57,8 +57,10 @@ app.include_router(document_requests.router, prefix="/document-requests", tags=[
 @app.get("/")
 async def root():
     """Root endpoint for testing"""
+    from .config import get_company_name
+    company_name = get_company_name()
     return {
-        "message": "Reliance Jio Infotech Solutions API is running!",
+        "message": f"{company_name} API is running!",
         "version": "0.1.0",
         "endpoints": {
             "health": "/health",

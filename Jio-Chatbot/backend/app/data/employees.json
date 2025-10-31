@@ -2,38 +2,42 @@
   {
     "emp_id": 1,
     "full_name": "Devyani Suresh Deore",
-    "designation": "Brand Manager",
-    "department": "Marketing",
+    "designation": "Technical Project Lead",
+    "department": "IT",
     "joining_date": "02-11-2021",
     "employee_code": "EMP0001",
-    "email": "deoredevayani26@gmail.com"
+    "email": "deoredevayani26@gmail.com",
+    "project_role": "Project Lead"
   },
   {
     "emp_id": 2,
     "full_name": "Ashwini Anil Nikumbh",
-    "designation": "Account Executive",
-    "department": "Finance",
+    "designation": "Backend Developer",
+    "department": "IT",
     "joining_date": "15-03-2022",
     "employee_code": "EMP0002",
-    "email": "nikumbhashwini17@gmail.com"
+    "email": "nikumbhashwini17@gmail.com",
+    "project_role": "Backend Developer"
   },
   {
     "emp_id": 3,
     "full_name": "Khushbu Arun Jain",
-    "designation": "HR Specialist",
-    "department": "Human Resources",
+    "designation": "Frontend Developer",
+    "department": "IT",
     "joining_date": "28-06-2023",
     "employee_code": "EMP0003",
-    "email": "jainkhushbu1810@gmail.com"
+    "email": "jainkhushbu1810@gmail.com",
+    "project_role": "Frontend Developer"
   },
   {
     "emp_id": 4,
     "full_name": "Mansi Anil Badgujar",
-    "designation": "Software Engineer",
+    "designation": "Full Stack Developer",
     "department": "IT",
     "joining_date": "19-08-2020",
     "employee_code": "EMP0004",
-    "email": "mansibadgujar99@gmail.com"
+    "email": "mansibadgujar99@gmail.com",
+    "project_role": "Full Stack Developer"
   },
   {
     "emp_id": 5,

@@ -13,6 +13,7 @@ from pydantic import BaseModel, EmailStr
 import jwt
 from dotenv import load_dotenv
 from ..services.db import db_service
+from ..config import get_app_name
 
 # Load environment variables
 load_dotenv()
@@ -40,31 +41,44 @@ class AuthResponse(BaseModel):
     token: Optional[str] = None
 
 async def load_employees():
-    """Load employees from MongoDB Atlas or fallback to JSON file"""
+    """Load employees from local JSON file (for authentication, always use local data)"""
     try:
-        # Try to get employees from MongoDB Atlas
-        if db_service.employees_collection is not None:
-            cursor = db_service.employees_collection.find({})
-            employees = await cursor.to_list(length=None)
+        # ALWAYS use local JSON file for authentication
+        # This ensures the correct team members (from employees.json) can login
+        import os
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        json_path = os.path.join(base_dir, "data", "employees.json")
+        
+        print(f"[DEBUG] Loading employees from: {json_path}")
+        
+        with open(json_path, "r", encoding="utf-8") as f:
+            employees = json.load(f)
+            print(f"[DEBUG] Successfully loaded {len(employees)} employees from local JSON")
             return employees
-        else:
-            # Fallback to local JSON file
-            with open("app/data/employees.json", "r") as f:
-                return json.load(f)
     except Exception as e:
-        # Fallback to local JSON file if MongoDB fails
-        try:
-            with open("app/data/employees.json", "r") as f:
-                return json.load(f)
-        except FileNotFoundError:
-            raise HTTPException(status_code=500, detail="Employee database not found")
+        print(f"[ERROR] Error loading employees: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Employee database not found: {str(e)}")
 
 async def is_valid_employee(email: str) -> bool:
     """Check if email belongs to one of the first 4 employees"""
-    employees = await load_employees()
-    # Only first 4 employees are allowed to login
-    allowed_employees = employees[:4]
-    return any(emp["email"].lower() == email.lower() for emp in allowed_employees)
+    try:
+        employees = await load_employees()
+        print(f"[DEBUG] Loaded {len(employees)} employees from database")
+        
+        # Only first 4 employees are allowed to login
+        allowed_employees = employees[:4]
+        print(f"[DEBUG] First 4 employees: {[emp.get('email', 'N/A') for emp in allowed_employees]}")
+        print(f"[DEBUG] Checking email: {email.lower()}")
+        
+        is_valid = any(emp["email"].lower() == email.lower() for emp in allowed_employees)
+        print(f"[DEBUG] Is valid employee: {is_valid}")
+        
+        return is_valid
+    except Exception as e:
+        print(f"[ERROR] Error in is_valid_employee: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 async def get_employee_by_email(email: str):
     """Get employee details by email"""
@@ -81,30 +95,34 @@ def generate_otp() -> str:
 def send_email_otp(email: str, otp: str) -> bool:
     """Send OTP via email using Gmail SMTP"""
     try:
-        # Email configuration
-        sender_email = os.getenv("EMAIL_USER")
-        sender_password = os.getenv("EMAIL_PASS")
+        # Email configuration (sanitize to avoid hidden spaces/quotes)
+        sender_email = os.getenv("EMAIL_USER") or ""
+        sender_password = os.getenv("EMAIL_PASS") or ""
+        sender_email = sender_email.strip().strip('"').strip("'")
+        # Gmail App Passwords are 16 chars without spaces; remove any accidental spaces
+        sender_password = sender_password.strip().strip('"').strip("'").replace(" ", "")
         
         if not sender_email or not sender_password:
             raise Exception("Email credentials not configured")
         
         # Create message
+        app_name = get_app_name()
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = email
-        msg['Subject'] = "Login OTP - Org AI Chatbot"
+        msg['Subject'] = f"Login OTP - {app_name}"
         
         # Email body
         body = f"""
         <html>
         <body>
             <h2>Login OTP</h2>
-            <p>Your OTP for logging into the Org AI Chatbot is:</p>
+            <p>Your OTP for logging into {app_name} is:</p>
             <h1 style="color: #007bff; font-size: 32px; letter-spacing: 5px;">{otp}</h1>
             <p>This OTP will expire in 5 minutes.</p>
             <p>If you didn't request this OTP, please ignore this email.</p>
             <br>
-            <p>Best regards,<br>Org AI Chatbot Team</p>
+            <p>Best regards,<br>{app_name} Team</p>
         </body>
         </html>
         """
@@ -112,7 +130,7 @@ def send_email_otp(email: str, otp: str) -> bool:
         msg.attach(MIMEText(body, 'html'))
         
         # Send email
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=30)
         server.starttls()
         server.login(sender_email, sender_password)
         text = msg.as_string()
@@ -288,7 +306,8 @@ async def get_current_user(request: Request):
                 "full_name": employee["full_name"],
                 "email": employee["email"],
                 "designation": employee["designation"],
-                "department": employee["department"]
+                "department": employee["department"],
+                "project_role": employee.get("project_role", "Team Member")
             }
         }
     except HTTPException:

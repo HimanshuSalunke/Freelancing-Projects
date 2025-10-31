@@ -23,7 +23,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Simple fetch to backend - exactly like HTML version's searchEmployees
-    const response = await fetch(`${BACKEND_URL}/certificates/employee-suggestions/${encodeURIComponent(query)}`)
+    // Use GET method to match backend endpoint
+    const response = await fetch(`${BACKEND_URL}/certificates/employee-suggestions/${encodeURIComponent(query)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Add timeout to prevent hanging (if AbortSignal.timeout is not available, will gracefully handle)
+      // Note: AbortSignal.timeout() requires Node.js 17.3+ or modern browsers
+    })
     
     if (!response.ok) {
       throw new Error(`Employee search error: ${response.statusText}`)
@@ -42,7 +50,21 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Employee search error:', error)
     
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    let errorMessage = 'Unknown error occurred'
+    let statusCode = 500
+    
+    if (error instanceof Error) {
+      errorMessage = error.message
+      
+      // Handle connection errors specifically
+      if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('fetch failed')) {
+        errorMessage = 'Backend server is not reachable. Please ensure the backend is running on port 8000.'
+        statusCode = 503 // Service Unavailable
+      } else if (errorMessage.includes('timeout') || errorMessage.includes('aborted')) {
+        errorMessage = 'Request timed out. Please try again.'
+        statusCode = 504 // Gateway Timeout
+      }
+    }
     
     return NextResponse.json(
       { 
@@ -51,7 +73,7 @@ export async function POST(request: NextRequest) {
         suggestions: [],
         count: 0
       },
-      { status: 500 }
+      { status: statusCode }
     )
   }
 }

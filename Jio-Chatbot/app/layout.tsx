@@ -2,17 +2,21 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import { getCompanyName, getAppName } from '@/lib/config'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const companyName = getCompanyName()
+const appName = getAppName()
+
 export const metadata: Metadata = {
-  title: 'Reliance Jio Infotech Solutions - AI-Powered HR Assistant',
-  description: 'Advanced AI-powered document processing, HR Q&A, and PDF summarization for Reliance Jio Infotech Solutions. Get instant answers, generate official documents, and process large PDFs with intelligent AI assistance.',
-  keywords: 'HR Assistant, Document Processing, PDF Summarization, AI Chatbot, Reliance Jio, Employee Documents',
-  authors: [{ name: 'Reliance Jio Infotech Solutions' }],
+  title: `${companyName} - AI-Powered HR Assistant`,
+  description: `Advanced AI-powered document processing, HR Q&A, and PDF summarization for ${companyName}. Get instant answers, generate official documents, and process large PDFs with intelligent AI assistance.`,
+  keywords: `HR Assistant, Document Processing, PDF Summarization, AI Chatbot, ${companyName}, Employee Documents`,
+  authors: [{ name: companyName }],
   robots: 'index, follow',
   openGraph: {
-    title: 'Reliance Jio Infotech Solutions - AI-Powered HR Assistant',
+    title: `${companyName} - AI-Powered HR Assistant`,
     description: 'Advanced AI-powered document processing and HR assistance',
     type: 'website',
     locale: 'en_US',

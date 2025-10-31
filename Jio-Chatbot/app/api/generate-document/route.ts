@@ -98,12 +98,16 @@ export async function POST(request: NextRequest) {
     console.log('Sending request to backend:', requestBody)  // Debug log
     console.log('Details JSON string:', JSON.stringify(details))  // Debug log
     
+    // Forward auth cookie to backend
+    const sessionCookie = request.cookies.get('session_token')?.value
+
     let submitResponse: Response
     try {
       submitResponse = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8000'}/document-requests/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(sessionCookie ? { 'Cookie': `session_token=${sessionCookie}` } : {}),
         },
         body: JSON.stringify(requestBody),
       })
@@ -194,7 +198,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch the generated PDF
-    const downloadResponse = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8000'}/document-requests/download/${requestId}`)
+    const downloadResponse = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8000'}/document-requests/download/${requestId}`, {
+      headers: {
+        ...(sessionCookie ? { 'Cookie': `session_token=${sessionCookie}` } : {}),
+      },
+    })
 
     if (!downloadResponse.ok) {
       const errorText = await downloadResponse.text()

@@ -29,6 +29,7 @@ import Header from '@/components/Header'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { cn } from '@/lib/utils'
 import { Message, ChatSession, TeamMember } from '@/lib/types'
+import { getCompanyName } from '@/lib/config'
 
 export default function Home() {
   const router = useRouter()
@@ -196,27 +197,27 @@ export default function Home() {
   const teamMembers: TeamMember[] = [
     {
       name: "Devyani Suresh Deore",
-      role: "Brand Manager",
-      department: "Marketing",
-      skills: ["Frontend", "UI/UX", "Project Management"]
+      role: "Project Lead",
+      department: "IT",
+      skills: ["Project Management", "Full Stack", "Team Leadership"]
     },
     {
       name: "Ashwini Anil Nikumbh",
-      role: "Account Executive", 
-      department: "Finance",
-      skills: ["Backend", "Database", "API Development"]
+      role: "Backend Developer", 
+      department: "IT",
+      skills: ["FastAPI", "Python", "Database Design", "API Development"]
     },
     {
       name: "Khushbu Arun Jain",
-      role: "HR Specialist",
-      department: "Human Resources", 
-      skills: ["AI Integration", "Business Logic", "Testing"]
+      role: "Frontend Developer",
+      department: "IT", 
+      skills: ["Next.js", "React", "TypeScript", "UI/UX Design"]
     },
     {
       name: "Mansi Anil Badgujar",
-      role: "Software Engineer",
+      role: "Full Stack Developer",
       department: "IT",
-      skills: ["Full Stack", "DevOps", "System Architecture"]
+      skills: ["React", "Python", "System Architecture", "DevOps"]
     }
   ]
 
@@ -261,7 +262,7 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             Welcome to{' '}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Reliance Jio
+              {getCompanyName()}
             </span>
           </h1>
           
@@ -435,13 +436,13 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Bot className="w-6 h-6 text-blue-400" />
-            <span className="text-xl font-semibold">Reliance Jio Infotech Solutions</span>
+            <span className="text-xl font-semibold">{getCompanyName()}</span>
           </div>
           <p className="text-gray-400">
             Advanced AI-Powered Document Processing & HR Q&A System
           </p>
           <p className="text-gray-500 text-sm mt-2">
-            © 2025 Reliance Jio Infotech Solutions. All rights reserved.
+            © 2025 {getCompanyName()}. All rights reserved.
           </p>
         </div>
       </footer>

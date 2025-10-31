@@ -210,7 +210,8 @@ class EmployeeValidator:
                         'employee_code': emp.get('employee_code', ''),
                         'designation': emp.get('designation', ''),
                         'department': emp.get('department', ''),
-                        'joining_date': emp.get('joining_date', '')
+                        'joining_date': emp.get('joining_date', ''),
+                        'project_role': emp.get('project_role', '')
                     })
                     
                     if len(suggestions) >= limit:

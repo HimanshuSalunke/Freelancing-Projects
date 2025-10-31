@@ -1060,3 +1060,30 @@ User: anonymous
 Details: {"employeeName":"Devyani Suresh Deore","employeeId":"EMP0001","designation":"Brand Manager","department":"Marketing","joiningDate":"2021-11-02","relievingDate":"2025-08-15","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
 Status: completed
 =====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-10-30 23:58:49
+Request ID: DOC_20251030_235849
+Document: Bonafide / Employment Verification Letter
+User: 1
+Details: {"employeeName":"Devyani Suresh Deore","employeeId":"EMP0001","designation":"Brand Manager","department":"Marketing","joiningDate":"2021-11-02","relievingDate":"","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-10-31 14:37:02
+Request ID: DOC_20251031_143702
+Document: Bonafide / Employment Verification Letter
+User: 1
+Details: {"employeeName":"Devyani Suresh Deore","employeeId":"EMP0001","designation":"Brand Manager","department":"Marketing","joiningDate":"2021-11-02","relievingDate":"","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================
+
+=== DOCUMENT REQUEST NOTIFICATION ===
+Time: 2025-10-31 14:51:31
+Request ID: DOC_20251031_145131
+Document: Experience Certificate
+User: 1
+Details: {"employeeName":"Devyani Suresh Deore","employeeId":"EMP0001","designation":"Brand Manager","department":"Marketing","joiningDate":"2021-11-02","relievingDate":"2025-10-24","salaryAmount":"","appointmentDate":"","promotionDate":"","newDesignation":"","nocPurpose":"","effectiveDate":"","signingDate":"","reason":"","destination":"","purpose":"","duration":"","travelDate":""}
+Status: completed
+=====================================

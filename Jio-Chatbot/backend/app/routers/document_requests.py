@@ -1,11 +1,18 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 from datetime import datetime
 from io import BytesIO
+import json
+import logging
 
 from ..services.document_request_handler import DocumentRequestHandler
+from .auth import get_current_user_dependency
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -40,9 +47,21 @@ class RequestStatus(BaseModel):
 
 
 @router.post("/submit", response_model=DocumentRequestResponse)
-async def submit_document_request(request: DocumentRequest):
-    """Submit a document request and generate PDF"""
+async def submit_document_request(
+    request: DocumentRequest,
+    current_user: dict = Depends(get_current_user_dependency)
+):
+    """
+    Submit a document request and generate PDF with authentication and same-user restriction
+    
+    Security: Users can only generate documents for themselves.
+    Any attempt to generate a document for another employee will result in 403 Forbidden.
+    """
     try:
+        # Log request
+        current_emp_id = str(current_user.get("emp_id", ""))
+        logger.info(f"📄 Document request from user {current_emp_id}: {request.document_name}")
+        
         # Validate document type
         is_valid, doc_type, doc_name = doc_handler.validate_document_choice(request.document_type)
         if not is_valid:
@@ -53,15 +72,55 @@ async def submit_document_request(request: DocumentRequest):
         if not is_valid_details:
             raise HTTPException(status_code=400, detail=validation_message)
         
-        # Submit the request and generate PDF
+        # SECURITY: Extract employee ID from request details and enforce same-user restriction
+        try:
+            details_dict = json.loads(request.details)
+            requested_emp_id_raw = str(details_dict.get('employeeId', '')).strip()
+
+            # Normalize requested employee identifier: allow numeric emp_id or alphanumeric employee_code (e.g., EMP0001)
+            requested_emp_id = requested_emp_id_raw
+            if not requested_emp_id.isdigit() and requested_emp_id:
+                # Resolve employee_code to numeric emp_id
+                try:
+                    from ..services.employee_validator import EmployeeValidator
+                    validator = EmployeeValidator()
+                    emp = validator.get_employee_by_id(requested_emp_id)
+                    if emp and 'emp_id' in emp:
+                        requested_emp_id = str(emp['emp_id'])
+                except Exception as _:
+                    # If resolution fails, keep original (will fail the check)
+                    pass
+
+            # Users can ONLY generate documents for themselves
+            if current_emp_id != requested_emp_id:
+                logger.warning(
+                    f"⚠️ SECURITY: User {current_emp_id} attempted to generate document "
+                    f"for user {requested_emp_id_raw} (normalized: {requested_emp_id}) - FORBIDDEN"
+                )
+                raise HTTPException(
+                    status_code=400,
+                    detail="You don't have access to generate documents for other users"
+                )
+        except json.JSONDecodeError:
+            logger.error("Failed to parse document details JSON")
+            raise HTTPException(status_code=400, detail="Invalid document details format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error validating employee ID: {str(e)}")
+            raise HTTPException(status_code=400, detail="Failed to validate request")
+        
+        # Submit the request and generate PDF (user_id is now authenticated user's ID)
         submitted_request = doc_handler.submit_document_request(
             doc_type=doc_type,
             doc_name=doc_name,
             details=request.details,
-            user_id=request.user_id
+            user_id=current_emp_id
         )
         
         message = "Document generated successfully" if submitted_request.get("pdf_generated", False) else "Document request submitted to HR"
+        
+        logger.info(f"✅ Document generated successfully for user {current_emp_id}")
         
         return DocumentRequestResponse(
             request_id=submitted_request['id'],
@@ -71,7 +130,10 @@ async def submit_document_request(request: DocumentRequest):
             message=message
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"❌ Error submitting document request: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to submit document request: {str(e)}")
 
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { getCompanyName } from '@/lib/config'
 
 interface LoginResponse {
   success: boolean
@@ -221,8 +222,8 @@ export default function LoginPage() {
           >
             <Lock className="w-8 h-8 text-white" />
           </motion.div>
-                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-           <p className="text-gray-600">Sign in to access Reliance Jio Infotech Solutions</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+          <p className="text-gray-600">Sign in to access {getCompanyName()}</p>
         </div>
 
         {/* Login Form */}
@@ -383,9 +384,9 @@ export default function LoginPage() {
           transition={{ delay: 0.5 }}
           className="text-center mt-6"
         >
-                     <p className="text-sm text-gray-500">
-             © 2025 Reliance Jio Infotech Solutions. All rights reserved.
-           </p>
+          <p className="text-sm text-gray-500">
+            © 2025 {getCompanyName()}. All rights reserved.
+          </p>
         </motion.div>
       </motion.div>
     </div>
