@@ -1,0 +1,222 @@
+# ===========================================
+# CRITICAL EXCLUSIONS (SECURITY)
+# ===========================================
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===========================================
+# NODE / NEXT.JS
+# ===========================================
+node_modules/
+.next/
+out/
+dist/
+build/
+.vercel/
+
+# ===========================================
+# PYTHON
+# ===========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# ===========================================
+# AI MODELS & ML CACHES (VERY LARGE)
+# ===========================================
+Jio-Chatbot/models/
+Jio-Chatbot/sentence-transformers/
+sentence-transformers/
+transformers_cache/
+.cache/
+.huggingface/
+torch_cache/
+.torch/
+.keras/
+tensorboard_logs/
+
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.h5
+*.hdf5
+*.pb
+*.tflite
+*.mlmodel
+*.mar
+*.model
+*.safetensors
+*.incomplete
+
+# ===========================================
+# BUILD / CACHE OUTPUTS
+# ===========================================
+.cache/
+.parcel-cache/
+.eslintcache
+tmp/
+temp/
+
+# ===========================================
+# DATABASES & DATA FILES
+# ===========================================
+*.db
+*.sqlite
+*.sqlite3
+*.mdb
+*.accdb
+*.xml
+*.xlsx
+*.xls
+
+# ===========================================
+# ORGANIZATION / SENSITIVE DATA
+# ===========================================
+Jio-Chatbot/org_data/employees.csv
+Jio-Chatbot/org_data/**/*.pdf
+
+# ===========================================
+# LOG FILES
+# ===========================================
+logs/
+*.log
+!Jio-Chatbot/backend/app/data/hr_notifications.log
+
+# ===========================================
+# MEDIA FILES
+# ===========================================
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.svg
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.webm
+*.mp3
+*.wav
+*.flac
+*.aac
+
+# Allow project images
+!Jio-Chatbot/Project Images/
+!Jio-Chatbot/Project Images/**/*.png
+!Jio-Chatbot/Project Images/**/*.jpg
+!Jio-Chatbot/Project Images/**/*.jpeg
+
+# ===========================================
+# ARCHIVES
+# ===========================================
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.bz2
+
+# ===========================================
+# IDE / OS
+# ===========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================================
+# TESTING
+# ===========================================
+coverage/
+.nyc_output/
+htmlcov/
+.pytest_cache/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+
+# ===========================================
+# PACKAGE MANAGERS
+# ===========================================
+.npm
+yarn.lock
+pnpm-lock.yaml
+
+# ===========================================
+# KEEP IMPORTANT PROJECT FILES
+# ===========================================
+!LICENSE
+!README.md
+!.gitignore
+
+!Jio-Chatbot/package.json
+!Jio-Chatbot/package-lock.json
+!Jio-Chatbot/requirements.txt
+
+!Jio-Chatbot/next.config.js
+!Jio-Chatbot/tailwind.config.js
+!Jio-Chatbot/postcss.config.js
+!Jio-Chatbot/eslint.config.js
+!Jio-Chatbot/tsconfig.json
+!Jio-Chatbot/next-env.d.ts
+
+# ===========================================
+# KEEP SOURCE CODE
+# ===========================================
+!Jio-Chatbot/app/**/*.ts
+!Jio-Chatbot/app/**/*.tsx
+!Jio-Chatbot/app/**/*.js
+!Jio-Chatbot/app/**/*.jsx
+
+!Jio-Chatbot/components/**/*.ts
+!Jio-Chatbot/components/**/*.tsx
+!Jio-Chatbot/components/**/*.js
+!Jio-Chatbot/components/**/*.jsx
+
+!Jio-Chatbot/lib/**/*.ts
+!Jio-Chatbot/lib/**/*.js
+
+!Jio-Chatbot/backend/app/**/*.py
+!Jio-Chatbot/backend/app/routers/**/*.py
+!Jio-Chatbot/backend/app/services/**/*.py
+
+# ===========================================
+# KEEP IMPORTANT DATA FILES
+# ===========================================
+!Jio-Chatbot/backend/app/data/qa_dataset.json
+!Jio-Chatbot/backend/app/data/bad_words.json
+!Jio-Chatbot/backend/app/data/document_requests.json
+!Jio-Chatbot/backend/app/data/employees.json
+!Jio-Chatbot/backend/app/data/hr_notifications.log
+
+# ===========================================
+# KEEP SCRIPTS & DOCS
+# ===========================================
+!Jio-Chatbot/scripts/**/*.py
+!Jio-Chatbot/scripts/**/*.js
+!Jio-Chatbot/**/*.md
+!Jio-Chatbot/.env.example
+!docker-compose*.yml
+!Dockerfile*
+!Procfile

@@ -1,0 +1,107 @@
+# ===============================
+# ENV & SECRETS
+# ===============================
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+
+# ===============================
+# NODE / NEXT
+# ===============================
+node_modules/
+.next/
+out/
+dist/
+build/
+.vercel/
+
+# ===============================
+# PYTHON
+# ===============================
+__pycache__/
+*.py[cod]
+.Python
+venv/
+.venv/
+ENV/
+env/
+
+# ===============================
+# AI / ML MODELS (VERY LARGE)
+# ===============================
+Jio-Chatbot/models/
+sentence-transformers/
+transformers_cache/
+.cache/
+.huggingface/
+torch_cache/
+.torch/
+.keras/
+
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.h5
+*.hdf5
+*.pb
+*.tflite
+*.mlmodel
+*.safetensors
+*.incomplete
+
+# ===============================
+# DATA (SENSITIVE / LARGE)
+# ===============================
+Jio-Chatbot/org_data/employees.csv
+Jio-Chatbot/org_data/**/*.pdf
+
+# ===============================
+# LOGS & TEMP
+# ===============================
+*.log
+logs/
+tmp/
+temp/
+
+# ===============================
+# IDE / OS
+# ===============================
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# ===============================
+# KEEP IMPORTANT FILES
+# ===============================
+!LICENSE
+!README.md
+!.gitignore
+
+!Jio-Chatbot/package.json
+!Jio-Chatbot/package-lock.json
+!Jio-Chatbot/requirements.txt
+
+!Jio-Chatbot/next.config.js
+!Jio-Chatbot/tailwind.config.js
+!Jio-Chatbot/postcss.config.js
+!Jio-Chatbot/eslint.config.js
+!Jio-Chatbot/tsconfig.json
+!Jio-Chatbot/next-env.d.ts
+
+# ===============================
+# KEEP SOURCE CODE
+# ===============================
+!Jio-Chatbot/app/**
+!Jio-Chatbot/components/**
+!Jio-Chatbot/lib/**
+!Jio-Chatbot/backend/app/**
+!Jio-Chatbot/scripts/**
+!Jio-Chatbot/**/*.md
